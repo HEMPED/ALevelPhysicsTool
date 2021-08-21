@@ -1,11 +1,8 @@
-import jdk.jfr.consumer.RecordedObject;
-
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.net.URL;
 
 public class Pendulum extends JFrame {
     public double angle = Math.PI/4;

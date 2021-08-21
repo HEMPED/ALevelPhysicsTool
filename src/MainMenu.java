@@ -4,7 +4,6 @@ import java.net.URL;
 import javax.swing.*;
 
 public class MainMenu extends JFrame{
-    //asf
     JButton pendulumB, massSpringB, button3, pendulumE, massSpringE, placeholderE;
     JLabel pendulumI, massSpringI, label3;
     JMenuBar menuBar;

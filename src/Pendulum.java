@@ -8,6 +8,13 @@ public class Pendulum extends JFrame {
     public double angle = Math.PI/4;
     public int length = 500;
     public double dt = 0.1;
+    public double gravity;
+    public double lengthExtra;
+    public double velocityExtra = 0;
+    public double gravityExtra;
+    public double angleExtra;
+    public double dtExtra;
+
     JSlider gravityS, lengthS, initAngleS;
     JLabel gravitySL, lengthSL, initAngleSL;
     JButton extraButton;
@@ -124,32 +131,45 @@ public class Pendulum extends JFrame {
 
         public void run(){
             double angleAccel = 0, angleVelocity = 0;
-            double gravity = (double) gravityS.getValue() / 100;
+            gravity = (double) gravityS.getValue() / 100;
             length = lengthS.getValue() / 10;
 
             calculate(gravity, angleAccel, angleVelocity, dt);
+
         }
 
         public void calculate(double gravity, double angleAccel, double angleVelocity, double dt){
-            if(variableChanged) {
-                gravity = (double) gravityS.getValue() / 100;
-                length = lengthS.getValue() / 10;
-                angle = initAngleS.getValue() / (180 / Math.PI);
-                angleVelocity = 0;
-                variableChanged = false;
-            }
-            angleAccel = (-1 * gravity) / length * Math.sin(angle);
-            angleVelocity = angleVelocity + angleAccel * dt;
-            angle = angle + angleVelocity * dt;
-            repaint();
 
-            try {
-                Thread.sleep(15);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            while(true) {
+                if (variableChanged) {
+                    gravity = (double) gravityS.getValue() / 100;
+                    System.out.println(gravity);
+                    length = lengthS.getValue() / 10;
+                    angle = initAngleS.getValue() / (180 / Math.PI);
+                    angleVelocity = 0;
+                    variableChanged = false;
+                }
+                if (TFSaved) {
+                    length = (int) lengthExtra;
+                    angleVelocity = velocityExtra;
+                    gravity = gravityExtra;
+                    angle = angleExtra;
+                    dt = dtExtra;
+                    angleVelocity = velocityExtra;
+                    TFSaved = false;
+                }
 
-            calculate(gravity, angleAccel, angleVelocity, dt);
+                angleAccel = (-1 * gravity) / length * Math.sin(angle);
+                angleVelocity = angleVelocity + angleAccel * dt;
+                angle = angle + angleVelocity * dt;
+                repaint();
+
+                try {
+                    Thread.sleep(15);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -283,7 +303,7 @@ public class Pendulum extends JFrame {
 
         public class saveChangesPressed implements ActionListener{
             boolean isValidated = true;
-            double lengthT, gravityT, initAngleT;
+            double lengthT = 5, gravityT = 9.81, initAngleT = 45, dtT = 0.1, initVelocityT = 0;
 
             public void actionPerformed(ActionEvent saveChangesPressed){
                 errors.setText("");
@@ -372,6 +392,15 @@ public class Pendulum extends JFrame {
                         errors.setText(errors.getText() + ", INITIAL ANGLE CANNOT BE GREATER THAN 175");
                     }
                 }
+
+                dtT = Double.parseDouble(dtTF.getText());
+                initVelocityT = Double.parseDouble(initVelocityTF.getText()) / 100;
+
+                lengthExtra = lengthT * 100;
+                gravityExtra = gravityT;
+                angleExtra = initAngleT * (Math.PI / 180);
+                dtExtra = dtT;
+                velocityExtra = initVelocityT;
 
                 TFSaved = true;
             }

@@ -143,7 +143,6 @@ public class Pendulum extends JFrame {
             while(true) {
                 if (variableChanged) {
                     gravity = (double) gravityS.getValue() / 100;
-                    System.out.println(gravity);
                     length = lengthS.getValue() / 10;
                     angle = initAngleS.getValue() / (180 / Math.PI);
                     angleVelocity = 0;
@@ -312,7 +311,7 @@ public class Pendulum extends JFrame {
                     gravityT = Double.parseDouble(gravityTF.getText());
                 } catch (NumberFormatException nfe){
                     if(errors.getText().equals("")) {
-                        gravityT = 9.81;
+                        gravityT = (double) gravityS.getValue() / 100;
                         errors.setText("NUMBERS ONLY");
                     }else if(errors.getText().contains("NUMBERS ONLY")){
 
@@ -337,11 +336,13 @@ public class Pendulum extends JFrame {
                     }
                 }
 
+                gravityS.setValue((int)(gravityT * 100));
+
 
                 try{
                     lengthT = Double.parseDouble(lengthTF.getText());
                 }catch (NumberFormatException nfe){
-                    lengthT = 5;
+                    lengthT = (double) lengthS.getValue() / 1000;
 
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
@@ -366,10 +367,12 @@ public class Pendulum extends JFrame {
                     }
                 }
 
+                lengthS.setValue((int) lengthT * 1000);
+
                 try{
                     initAngleT = Double.parseDouble(initAngleTF.getText());
                 }catch (NumberFormatException NFE){
-                    initAngleT = 45;
+                    initAngleT = initAngleS.getValue();
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
                     }else if(errors.getText().contains("NUMBERS ONLY")){
@@ -393,8 +396,40 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                dtT = Double.parseDouble(dtTF.getText());
-                initVelocityT = Double.parseDouble(initVelocityTF.getText()) / 100;
+                initAngleS.setValue((int) initAngleT);
+
+                try {
+                    dtT = Double.parseDouble(dtTF.getText());
+                } catch (NumberFormatException NFE){
+                    dtT = dt;
+                    if(errors.getText().equals("")) {
+                        errors.setText("NUMBERS ONLY");
+                    }else if(errors.getText().contains("NUMBERS ONLY")){
+                    }else{
+                        errors.setText(errors.getText() + ", NUMBERS ONLY");
+                    }
+                }
+
+                if(dtT < 0){
+                    if(errors.getText().equals("")){
+                        errors.setText("DT CANNOT BE LESS THAN 0");
+                        dt = 0.1;
+                    } else {
+                        errors.setText(errors.getText() + ", DT CANNOT BE LESS THAN 0");
+                    }
+                }
+
+                try {
+                    initVelocityT = Double.parseDouble(initVelocityTF.getText()) / 100;
+                }catch(NumberFormatException NFE){
+                    initVelocityT = 0;
+                    if(errors.getText().equals("")) {
+                        errors.setText("NUMBERS ONLY");
+                    }else if(errors.getText().contains("NUMBERS ONLY")){
+                    }else{
+                        errors.setText(errors.getText() + ", NUMBERS ONLY");
+                    }
+                }
 
                 lengthExtra = lengthT * 100;
                 gravityExtra = gravityT;

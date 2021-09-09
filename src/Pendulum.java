@@ -5,33 +5,43 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Pendulum extends JFrame {
+    //declare variables that are present in the starting simulation
     public double angle = Math.PI/4;
+    //500 used instead of 5 so this value can be used directly to draw the pendulum
     public int length = 500;
     public double dt = 0.1;
     public double gravity;
+
+    //declare variables that are used for the sliders
+    JSlider gravityS, lengthS, initAngleS;
+    JLabel gravitySL, lengthSL, initAngleSL;
+    boolean variableChanged = false;
+
+    //declare variables that are used in the extra input panel
+    JButton extraButton;
     public double lengthExtra;
     public double velocityExtra = 0;
     public double gravityExtra;
     public double angleExtra;
     public double dtExtra;
-
-    JSlider gravityS, lengthS, initAngleS;
-    JLabel gravitySL, lengthSL, initAngleSL;
-    JButton extraButton;
-    boolean variableChanged = false;
     boolean TFSaved = false;
 
     public Pendulum(){
+        //set layout for the whole frame and individual panels
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
+        getContentPane().setBackground(Color.white);
         c.insets = new Insets(3,3,3,3);
 
         JPanel sliderPanel = new JPanel();
         sliderPanel.setLayout(new GridBagLayout());
+        sliderPanel.setBackground(Color.WHITE);
 
         JPanel extraPanel = new JPanel();
-        sliderPanel.setLayout(new GridBagLayout());
+        extraPanel.setBackground(Color.WHITE);
+        extraPanel.setLayout(new GridBagLayout());
 
+        //create sliders and their labels
         gravityS = new JSlider(JSlider.HORIZONTAL,0,2000,981);
         gravityS.setMajorTickSpacing(1000);
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -69,6 +79,7 @@ public class Pendulum extends JFrame {
         c.gridy = 1;
         sliderPanel.add(initAngleSL, c);
 
+        //add change listeners to the sliders
         gravitySChanged GSC = new gravitySChanged();
         gravityS.addChangeListener(GSC);
 
@@ -78,11 +89,13 @@ public class Pendulum extends JFrame {
         initAngleSChanged IASC = new initAngleSChanged();
         initAngleS.addChangeListener(IASC);
 
+        //add the slider panel to the main frame
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 1;
         add(sliderPanel,c);
 
+        //add extra button to the extra panel and adds the extra panel to the frame
         extraButton = new JButton("Click here for more inputs");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -94,9 +107,12 @@ public class Pendulum extends JFrame {
         c.gridy = 2;
         add(extraPanel, c);
 
+        //add action listener to the extra button
         extraButtonPressed EBP = new extraButtonPressed();
         extraButton.addActionListener(EBP);
 
+        //initialise panel for the pendulum and makes it take up all available space in the window (weightx, weighty)
+        //starts the simulation
         PendulumPanel pendulumPanel = new PendulumPanel();
         c.fill = GridBagConstraints.BOTH;
         c.weighty = 1;
@@ -107,20 +123,23 @@ public class Pendulum extends JFrame {
         new Thread(pendulumPanel).start();
     }
 
+    //panel that contains the actual simulation of the pendulum
     public class PendulumPanel extends JPanel implements Runnable{
         public PendulumPanel(){
             setLayout(new FlowLayout());
+            setBackground(Color.DARK_GRAY);
             setPreferredSize(new Dimension(500,500));
             setDoubleBuffered(true);
         }
 
+        //draws the pendulum
         @Override
         public void paint(Graphics g){
-            g.setColor(Color.LIGHT_GRAY);
+            g.setColor(Color.WHITE);
             g.fillRect(0,0,getWidth(),getHeight());
-            g.setColor(Color.BLACK);
+            g.setColor(new Color(0x080826));
 
-            int pointX = getWidth()/2, pointY = getHeight()/4;
+            int pointX = getWidth()/2, pointY = getHeight()/10;
             int pendulumX = pointX + (int) (Math.sin(angle) * length);
             int pendulumY = pointY + (int) (Math.cos(angle) * length);
 
@@ -130,15 +149,15 @@ public class Pendulum extends JFrame {
         }
 
         public void run(){
-            double angleAccel = 0, angleVelocity = 0;
+            double angleVelocity = 0;
             gravity = (double) gravityS.getValue() / 100;
             length = lengthS.getValue() / 10;
 
-            calculate(gravity, angleAccel, angleVelocity, dt);
+            calculate(gravity, angleVelocity, dt);
 
         }
 
-        public void calculate(double gravity, double angleAccel, double angleVelocity, double dt){
+        public void calculate(double gravity, double angleVelocity, double dt){
 
             while(true) {
                 if (variableChanged) {
@@ -150,7 +169,6 @@ public class Pendulum extends JFrame {
                 }
                 if (TFSaved) {
                     length = (int) lengthExtra;
-                    angleVelocity = velocityExtra;
                     gravity = gravityExtra;
                     angle = angleExtra;
                     dt = dtExtra;
@@ -158,7 +176,7 @@ public class Pendulum extends JFrame {
                     TFSaved = false;
                 }
 
-                angleAccel = (-1 * gravity) / length * Math.sin(angle);
+                double angleAccel = (-1 * gravity) / length * Math.sin(angle);
                 angleVelocity = angleVelocity + angleAccel * dt;
                 angle = angle + angleVelocity * dt;
                 repaint();
@@ -181,9 +199,9 @@ public class Pendulum extends JFrame {
 
         public extraInputPanel(){
             setLayout(new GridBagLayout());
-            setBackground(Color.white);
             GridBagConstraints c = new GridBagConstraints();
             c.insets = new Insets(3,3,3,3);
+
 
             gravityL = new JLabel("Gravity: ");
             c.fill = GridBagConstraints.HORIZONTAL;
@@ -210,7 +228,7 @@ public class Pendulum extends JFrame {
             c.gridy = 1;
             add(lengthL, c);
 
-            double lengthTemp = lengthS.getValue() / 1000;
+            double lengthTemp = (double) lengthS.getValue() / 1000;
             lengthTF = new JTextField("" + lengthTemp);
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 1;
@@ -482,6 +500,7 @@ public class Pendulum extends JFrame {
         Pendulum pendulum = new Pendulum();
         pendulum.setVisible(true);
         pendulum.setSize(800,800);
+        pendulum.setExtendedState(JFrame.MAXIMIZED_BOTH);
         pendulum.setTitle("Pendulum");
         pendulum.setLocation(100, 50);
     }

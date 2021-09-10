@@ -5,12 +5,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Pendulum extends JFrame {
-    //declare variables that are present in the starting simulation
-    public double angle = Math.PI/4;
-    //500 used instead of 5 so this value can be used directly to draw the pendulum
-    public int length = 500;
-    public double dt = 0.1;
-    public double gravity;
+    //declare pendulum object
+    public pendulumObj PO = new pendulumObj(5, 0, 9.81, (Math.PI/4), 0.015);
 
     //declare variables that are used for the sliders
     JSlider gravityS, lengthS, initAngleS;
@@ -122,7 +118,6 @@ public class Pendulum extends JFrame {
         c.gridx = 0;
         c.gridy = 0;
         add(pendulumPanel,c);
-        //add(pendulumScroll, c);
         new Thread(pendulumPanel).start();
     }
 
@@ -144,20 +139,20 @@ public class Pendulum extends JFrame {
             g.setColor(new Color(0x080826));
 
             int pointX = getWidth()/2, pointY = getHeight()/10;
-            int pendulumX = pointX + (int) (Math.sin(angle) * length);
-            int pendulumY = pointY + (int) (Math.cos(angle) * length);
+            int pendulumX = pointX + (int) (Math.sin(PO.getAngle()) * PO.getLength()*100);
+            int pendulumY = pointY + (int) (Math.cos(PO.getAngle()) * PO.getLength()*100);
 
             g.drawLine(pointX, pointY, pendulumX, pendulumY);
             g.fillOval(pointX - 3, pointY - 6,7,10);
+            g.setColor(Color.RED);
             g.fillOval(pendulumX - 7, pendulumY - 7, 14, 14);
         }
 
         public void run(){
-            double angleVelocity = 0;
-            gravity = (double) gravityS.getValue() / 100;
-            length = lengthS.getValue() / 10;
+            PO.setGravity((double) gravityS.getValue() / 100);
+            PO.setLength((double) lengthS.getValue() / 1000);
 
-            calculate(gravity, angleVelocity, dt);
+            calculate(PO.getGravity(), PO.getVelocity(), PO.getDt());
 
         }
 
@@ -166,27 +161,27 @@ public class Pendulum extends JFrame {
             while(true) {
                 if (variableChanged) {
                     gravity = (double) gravityS.getValue() / 100;
-                    length = lengthS.getValue() / 10;
-                    angle = initAngleS.getValue() / (180 / Math.PI);
-                    angleVelocity = 0;
+                    PO.setLength((double) lengthS.getValue() / 1000);
+                    PO.setAngle(initAngleS.getValue() / (180 / Math.PI));
+                    PO.setVelocity(0);
                     variableChanged = false;
                 }
                 if (TFSaved) {
-                    length = (int) lengthExtra;
-                    gravity = gravityExtra;
-                    angle = angleExtra;
-                    dt = dtExtra;
-                    angleVelocity = velocityExtra;
+                    PO.setLength((int) lengthExtra);
+                    PO.setGravity(gravityExtra);
+                    PO.setAngle(angleExtra);
+                    PO.setDt(dtExtra);
+                    PO.setVelocity(velocityExtra);
                     TFSaved = false;
                 }
 
-                double angleAccel = (-1 * gravity) / length * Math.sin(angle);
-                angleVelocity = angleVelocity + angleAccel * dt;
-                angle = angle + angleVelocity * dt;
+                double angleAccel = (-1 * gravity) * Math.sin(PO.getAngle());
+                PO.setVelocity(PO.getVelocity() + angleAccel*0.01);
+                PO.setAngle(PO.getAngle() + PO.getVelocity() * PO.getDt());
                 repaint();
 
                 try {
-                    Thread.sleep(15);
+                    Thread.sleep((long) (PO.getDt()*1000));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -272,7 +267,7 @@ public class Pendulum extends JFrame {
             c.gridy = 3;
             add(dtL, c);
 
-            dtTF = new JTextField("" + dt);
+            dtTF = new JTextField("" + PO.getDt());
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 1;
             c.gridy = 3;
@@ -442,7 +437,7 @@ public class Pendulum extends JFrame {
                     dtT = Double.parseDouble(dtTF.getText());
                 } catch (NumberFormatException NFE){
                     isValidated = false;
-                    dtT = dt;
+                    dtT = PO.getDt();
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
                     }else if(errors.getText().contains("NUMBERS ONLY")){
@@ -455,7 +450,7 @@ public class Pendulum extends JFrame {
                     isValidated = false;
                     if(errors.getText().equals("")){
                         errors.setText("DT CANNOT BE LESS THAN 0");
-                        dt = 0.1;
+                        dtT = 0.1;
                     } else {
                         errors.setText(errors.getText() + ", DT CANNOT BE LESS THAN 0");
                     }
@@ -474,7 +469,7 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                lengthExtra = lengthT * 100;
+                lengthExtra = lengthT;
                 gravityExtra = gravityT;
                 angleExtra = initAngleT * (Math.PI / 180);
                 dtExtra = dtT;
@@ -530,5 +525,59 @@ public class Pendulum extends JFrame {
         pendulum.setExtendedState(JFrame.MAXIMIZED_BOTH);
         pendulum.setTitle("Pendulum");
         pendulum.setLocation(100, 50);
+    }
+}
+
+class pendulumObj{
+    private double length, velocity, gravity, angle, dt;
+
+    public pendulumObj(double len, double vel, double grav, double ang, double DT){
+        length = len;
+        velocity = vel;
+        gravity = grav;
+        angle = ang;
+        dt = DT;
+    }
+
+    //getter methods for the pendulum object
+    public double getLength(){
+        return length;
+    }
+
+    public double getVelocity(){
+        return velocity;
+    }
+
+    public double getGravity(){
+        return gravity;
+    }
+
+    public double getAngle(){
+        return angle;
+    }
+
+    public double getDt(){
+        return dt;
+    }
+
+    //setter methods for the pendulum object
+    public void setLength(double len){
+        length = len;
+    }
+
+    public void setVelocity(double vel){
+        velocity = vel;
+    }
+
+    public void setGravity(double grav){
+        gravity = grav;
+    }
+
+    public void setAngle(double ang){
+        angle = ang;
+    }
+
+    public void setDt(double DT){
+        dt = DT;
     }
 }

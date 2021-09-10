@@ -195,7 +195,6 @@ public class Pendulum extends JFrame {
         JLabel gravityUnit, lengthUnit, initAngleUnit, dtUnit, initVelocityUnit;
         JTextArea errors;
         JButton saveChanges;
-        JCheckBox trackBall;
 
         public extraInputPanel(){
             setLayout(new GridBagLayout());
@@ -317,17 +316,10 @@ public class Pendulum extends JFrame {
             c.gridx = 0;
             c.gridy = 7;
             add(errors, c);
-
-            trackBall = new JCheckBox("Track Ball", false);
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridx = 0;
-            c.gridy = 5;
-            add(trackBall, c);
         }
 
         public class saveChangesPressed implements ActionListener{
             boolean isValidated = true;
-            boolean trackBall;
             double lengthT = 5, gravityT = 9.81, initAngleT = 45, dtT = 0.1, initVelocityT = 0;
 
             public void actionPerformed(ActionEvent saveChangesPressed){
@@ -337,6 +329,7 @@ public class Pendulum extends JFrame {
                     gravityT = Double.parseDouble(gravityTF.getText());
                 } catch (NumberFormatException nfe){
                     isValidated = false;
+                    gravityT = PO.getGravity();
                     if(errors.getText().equals("")) {
                         gravityT = (double) gravityS.getValue() / 100;
                         errors.setText("NUMBERS ONLY");
@@ -349,6 +342,7 @@ public class Pendulum extends JFrame {
 
                 if(gravityT < 0){
                     isValidated = false;
+                    gravityT = PO.getGravity();
                     if(errors.getText().equals("")) {
                         errors.setText("GRAVITY CANNOT BE LESS THAN 0");
                     }else{
@@ -358,6 +352,7 @@ public class Pendulum extends JFrame {
 
                 if(gravityT > 20){
                     isValidated = false;
+                    gravityT = PO.getGravity();
                     if(errors.getText().equals("")) {
                         errors.setText("GRAVITY CANNOT BE GREATER THAN 20");
                     }else{
@@ -365,15 +360,12 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                gravityS.setValue((int)(gravityT * 100));
-
 
                 try{
                     lengthT = Double.parseDouble(lengthTF.getText());
                 }catch (NumberFormatException nfe){
                     isValidated = false;
-                    lengthT = (double) lengthS.getValue() / 1000;
-
+                    lengthT = PO.getLength();
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
                     }else if(errors.getText().contains("NUMBERS ONLY")){
@@ -384,6 +376,7 @@ public class Pendulum extends JFrame {
                 }
                 if(lengthT < 0){
                     isValidated = false;
+                    lengthT = PO.getLength();
                     if(errors.getText().equals("")) {
                         errors.setText("LENGTH CANNOT BE LESS THAN 0");
                     }else{
@@ -392,6 +385,7 @@ public class Pendulum extends JFrame {
                 }
                 if(lengthT > 10){
                     isValidated = false;
+                    lengthT = PO.getLength();
                     if(errors.getText().equals("")) {
                         errors.setText("LENGTH CANNOT BE GREATER THAN 10");
                     }else{
@@ -399,13 +393,13 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                lengthS.setValue((int) lengthT * 1000);
+
 
                 try{
                     initAngleT = Double.parseDouble(initAngleTF.getText());
                 }catch (NumberFormatException NFE){
                     isValidated = false;
-                    initAngleT = initAngleS.getValue();
+                    initAngleT = PO.getAngle();
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
                     }else if(errors.getText().contains("NUMBERS ONLY")){
@@ -416,6 +410,7 @@ public class Pendulum extends JFrame {
                 }
                 if(initAngleT < 0){
                     isValidated = false;
+                    initAngleT = PO.getAngle();
                     if(errors.getText().equals("")) {
                         errors.setText("INITIAL ANGLE CANNOT BE LESS THAN 0");
                     }else{
@@ -424,14 +419,13 @@ public class Pendulum extends JFrame {
                 }
                 if(initAngleT > 175){
                     isValidated = false;
+                    initAngleT = PO.getAngle();
                     if(errors.getText().equals("")){
                         errors.setText("INITIAL ANGLE CANNOT BE GREATER THAN 175");
                     } else {
                         errors.setText(errors.getText() + ", INITIAL ANGLE CANNOT BE GREATER THAN 175");
                     }
                 }
-
-                initAngleS.setValue((int) initAngleT);
 
                 try {
                     dtT = Double.parseDouble(dtTF.getText());
@@ -448,6 +442,7 @@ public class Pendulum extends JFrame {
 
                 if(dtT < 0){
                     isValidated = false;
+                    dtT = PO.getDt();
                     if(errors.getText().equals("")){
                         errors.setText("DT CANNOT BE LESS THAN 0");
                         dtT = 0.1;
@@ -469,9 +464,15 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                lengthExtra = lengthT;
                 gravityExtra = gravityT;
+                gravityS.setValue((int)(gravityT * 100));
+
+                lengthExtra = lengthT;
+                lengthS.setValue((int) (lengthT * 1000));
+
                 angleExtra = initAngleT * (Math.PI / 180);
+                initAngleS.setValue((int) initAngleT);
+
                 dtExtra = dtT;
                 velocityExtra = initVelocityT;
 
@@ -524,7 +525,7 @@ public class Pendulum extends JFrame {
         pendulum.setSize(800,800);
         pendulum.setExtendedState(JFrame.MAXIMIZED_BOTH);
         pendulum.setTitle("Pendulum");
-        pendulum.setLocation(100, 50);
+        pendulum.setLocation(0, 0);
     }
 }
 

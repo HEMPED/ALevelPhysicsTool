@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -21,6 +22,9 @@ public class Pendulum extends JFrame {
     public double angleExtra;
     public double dtExtra;
     boolean TFSaved = false;
+
+    //variables that are used when the user clicks the screen
+    boolean clicked = false;
 
     public Pendulum(){
         //set layout for the whole frame and individual panels
@@ -63,7 +67,7 @@ public class Pendulum extends JFrame {
         c.gridy = 1;
         sliderPanel.add(lengthSL, c);
 
-        initAngleS = new JSlider(JSlider.HORIZONTAL, 0,175, 45);
+        initAngleS = new JSlider(JSlider.HORIZONTAL, -180,180, 45);
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 2;
         c.gridy = 0;
@@ -123,12 +127,18 @@ public class Pendulum extends JFrame {
 
     //panel that contains the actual simulation of the pendulum
     public class PendulumPanel extends JPanel implements Runnable{
+
+        public int pendulumX, pendulumY, pointX, pointY;
+
         public PendulumPanel(){
             setLayout(new FlowLayout());
             setBackground(Color.DARK_GRAY);
             Dimension d = new Dimension(500, 500);
             setPreferredSize(d);
             setDoubleBuffered(true);
+
+            MListener mouseListener = new MListener();
+            addMouseListener(mouseListener);
         }
 
         //draws the pendulum
@@ -138,14 +148,22 @@ public class Pendulum extends JFrame {
             g.fillRect(0,0,getWidth(),getHeight());
             g.setColor(new Color(0x080826));
 
-            int pointX = getWidth()/2, pointY = getHeight()/10;
-            int pendulumX = pointX + (int) (Math.sin(PO.getAngle()) * PO.getLength()*100);
-            int pendulumY = pointY + (int) (Math.cos(PO.getAngle()) * PO.getLength()*100);
+            pointX = getWidth()/2;
+            pointY = getHeight()/10;
+            pendulumX = pointX + (int) (Math.sin(PO.getAngle()) * PO.getLength()*100);
+            pendulumY = pointY + (int) (Math.cos(PO.getAngle()) * PO.getLength()*100);
 
+            //draws fixed point
             g.drawLine(pointX, pointY, pendulumX, pendulumY);
-            g.fillOval(pointX - 3, pointY - 6,7,10);
+            g.fillRoundRect(pointX - 5, pointY - 5,
+                    10, 10, 10, 10);
+
+            //draws pendulum
             g.setColor(Color.RED);
-            g.fillOval(pendulumX - 7, pendulumY - 7, 14, 14);
+            g.fillRoundRect(pendulumX - 10, pendulumY - 10,
+                    20, 20, 20, 20);
+
+
         }
 
         public void run(){
@@ -171,12 +189,13 @@ public class Pendulum extends JFrame {
                     PO.setGravity(gravityExtra);
                     PO.setAngle(angleExtra);
                     PO.setDt(dtExtra);
-                    PO.setVelocity(velocityExtra);
+                    PO.setVelocity(velocityExtra * 100);
                     TFSaved = false;
                 }
 
+
                 double angleAccel = (-1 * gravity) * Math.sin(PO.getAngle());
-                PO.setVelocity(PO.getVelocity() + angleAccel*0.01);
+                PO.setVelocity(PO.getVelocity() + angleAccel* PO.getDt());
                 PO.setAngle(PO.getAngle() + PO.getVelocity() * PO.getDt());
                 repaint();
 
@@ -185,6 +204,50 @@ public class Pendulum extends JFrame {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+
+        class MListener extends MouseInputAdapter {
+            public void mousePressed(MouseEvent e){
+                double diffX, diffY, length, angle = 45;
+                //get position of mouse cursor
+                pendulumX = e.getX();
+                pendulumY = e.getY();
+
+                //find the difference between the anchor point and the cursor
+                diffX = pointX - pendulumX;
+                diffY = pointY - pendulumY;
+
+                //calculate the new length of the pendulum
+                length = Math.pow(diffX, 2) + Math.pow(diffY, 2);
+                length = Math.pow(length, 0.5);
+                length = length / 100;
+
+                //calculate the new angle of the pendulum
+
+                if(pendulumY > pointY){
+                    angle = Math.atan(diffX / diffY);
+                } else {
+                    angle = Math.PI + Math.atan(diffX / diffY);
+                }
+
+                //set the values of sliders
+                lengthS.setValue((int) (length * 1000));
+
+                int angleInt = (int) (angle * (180 / Math.PI));
+                if(angleInt > 180){
+                    angleInt = angleInt - 360;
+                }
+
+                initAngleS.setValue(angleInt);
+
+                //set the length, angle and resets velocity to 0 so no velocity is carried from the previous simulation
+                PO.setLength(length);
+                PO.setAngle(angle);
+                PO.setVelocity(0);
+
+                //trigger the flag
+                clicked = true;
             }
         }
     }
@@ -329,7 +392,6 @@ public class Pendulum extends JFrame {
                     gravityT = Double.parseDouble(gravityTF.getText());
                 } catch (NumberFormatException nfe){
                     isValidated = false;
-                    gravityT = PO.getGravity();
                     if(errors.getText().equals("")) {
                         gravityT = (double) gravityS.getValue() / 100;
                         errors.setText("NUMBERS ONLY");
@@ -342,7 +404,6 @@ public class Pendulum extends JFrame {
 
                 if(gravityT < 0){
                     isValidated = false;
-                    gravityT = PO.getGravity();
                     if(errors.getText().equals("")) {
                         errors.setText("GRAVITY CANNOT BE LESS THAN 0");
                     }else{
@@ -352,7 +413,6 @@ public class Pendulum extends JFrame {
 
                 if(gravityT > 20){
                     isValidated = false;
-                    gravityT = PO.getGravity();
                     if(errors.getText().equals("")) {
                         errors.setText("GRAVITY CANNOT BE GREATER THAN 20");
                     }else{
@@ -360,12 +420,15 @@ public class Pendulum extends JFrame {
                     }
                 }
 
+                gravityS.setValue((int)(gravityT * 100));
+
 
                 try{
                     lengthT = Double.parseDouble(lengthTF.getText());
                 }catch (NumberFormatException nfe){
                     isValidated = false;
-                    lengthT = PO.getLength();
+                    lengthT = (double) lengthS.getValue() / 1000;
+
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
                     }else if(errors.getText().contains("NUMBERS ONLY")){
@@ -376,7 +439,6 @@ public class Pendulum extends JFrame {
                 }
                 if(lengthT < 0){
                     isValidated = false;
-                    lengthT = PO.getLength();
                     if(errors.getText().equals("")) {
                         errors.setText("LENGTH CANNOT BE LESS THAN 0");
                     }else{
@@ -385,7 +447,6 @@ public class Pendulum extends JFrame {
                 }
                 if(lengthT > 10){
                     isValidated = false;
-                    lengthT = PO.getLength();
                     if(errors.getText().equals("")) {
                         errors.setText("LENGTH CANNOT BE GREATER THAN 10");
                     }else{
@@ -393,13 +454,13 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-
+                lengthS.setValue((int) (lengthT * 1000));
 
                 try{
                     initAngleT = Double.parseDouble(initAngleTF.getText());
                 }catch (NumberFormatException NFE){
                     isValidated = false;
-                    initAngleT = PO.getAngle();
+                    initAngleT = initAngleS.getValue();
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
                     }else if(errors.getText().contains("NUMBERS ONLY")){
@@ -408,24 +469,24 @@ public class Pendulum extends JFrame {
                         errors.setText(errors.getText() + ", NUMBERS ONLY");
                     }
                 }
-                if(initAngleT < 0){
+                if(initAngleT < -180){
                     isValidated = false;
-                    initAngleT = PO.getAngle();
                     if(errors.getText().equals("")) {
-                        errors.setText("INITIAL ANGLE CANNOT BE LESS THAN 0");
+                        errors.setText("INITIAL ANGLE CANNOT BE LESS THAN -180");
                     }else{
-                        errors.setText(errors.getText() + ", INITIAL ANGLE CANNOT BE LESS THAN 0");
+                        errors.setText(errors.getText() + ", INITIAL ANGLE CANNOT BE LESS THAN -180");
                     }
                 }
-                if(initAngleT > 175){
+                if(initAngleT > 180){
                     isValidated = false;
-                    initAngleT = PO.getAngle();
                     if(errors.getText().equals("")){
-                        errors.setText("INITIAL ANGLE CANNOT BE GREATER THAN 175");
+                        errors.setText("INITIAL ANGLE CANNOT BE GREATER THAN 180");
                     } else {
-                        errors.setText(errors.getText() + ", INITIAL ANGLE CANNOT BE GREATER THAN 175");
+                        errors.setText(errors.getText() + ", INITIAL ANGLE CANNOT BE GREATER THAN 180");
                     }
                 }
+
+                initAngleS.setValue((int) initAngleT);
 
                 try {
                     dtT = Double.parseDouble(dtTF.getText());
@@ -442,7 +503,6 @@ public class Pendulum extends JFrame {
 
                 if(dtT < 0){
                     isValidated = false;
-                    dtT = PO.getDt();
                     if(errors.getText().equals("")){
                         errors.setText("DT CANNOT BE LESS THAN 0");
                         dtT = 0.1;
@@ -464,15 +524,9 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                gravityExtra = gravityT;
-                gravityS.setValue((int)(gravityT * 100));
-
                 lengthExtra = lengthT;
-                lengthS.setValue((int) (lengthT * 1000));
-
+                gravityExtra = gravityT;
                 angleExtra = initAngleT * (Math.PI / 180);
-                initAngleS.setValue((int) initAngleT);
-
                 dtExtra = dtT;
                 velocityExtra = initVelocityT;
 
@@ -525,7 +579,7 @@ public class Pendulum extends JFrame {
         pendulum.setSize(800,800);
         pendulum.setExtendedState(JFrame.MAXIMIZED_BOTH);
         pendulum.setTitle("Pendulum");
-        pendulum.setLocation(0, 0);
+        pendulum.setLocation(100, 50);
     }
 }
 

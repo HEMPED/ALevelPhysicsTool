@@ -4,6 +4,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.JLabel;
 
 public class Pendulum extends JFrame {
     //declare pendulum object
@@ -11,7 +12,7 @@ public class Pendulum extends JFrame {
 
     //declare variables that are used for the sliders
     JSlider gravityS, lengthS, initAngleS;
-    JLabel gravitySL, lengthSL, initAngleSL;
+    JLabel gravitySL, lengthSL, initAngleSL, overlayL;
     boolean variableChanged = false;
 
     //declare variables that are used in the extra input panel
@@ -112,22 +113,22 @@ public class Pendulum extends JFrame {
         extraButton.addActionListener(EBP);
 
         //initialise panel for the pendulum and makes it take up all available space in the window (weightx, weighty)
-        //starts the simulation
         PendulumPanel pendulumPanel = new PendulumPanel();
-        //JScrollPane pendulumScroll = new JScrollPane(pendulumPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         c.fill = GridBagConstraints.BOTH;
-        //pendulumScroll.setPreferredSize(new Dimension(500,500));
         c.weighty = 1;
         c.weightx = 1;
         c.gridx = 0;
         c.gridy = 0;
         add(pendulumPanel,c);
+
+        //starts the simulation
         new Thread(pendulumPanel).start();
     }
 
     //panel that contains the actual simulation of the pendulum
     public class PendulumPanel extends JPanel implements Runnable{
 
+        //initialise integers that are used to draw the pendulum
         public int pendulumX, pendulumY, pointX, pointY;
 
         public PendulumPanel(){
@@ -137,6 +138,7 @@ public class Pendulum extends JFrame {
             setPreferredSize(d);
             setDoubleBuffered(true);
 
+            //add mouse listener which listens to clicks of the mouse
             MListener mouseListener = new MListener();
             addMouseListener(mouseListener);
         }
@@ -144,21 +146,34 @@ public class Pendulum extends JFrame {
         //draws the pendulum
         @Override
         public void paint(Graphics g){
-            g.setColor(Color.WHITE);
+            //fills the background
+            g.setColor(Color.white);
             g.fillRect(0,0,getWidth(),getHeight());
-            g.setColor(new Color(0x080826));
 
+            //initialise the overlay which prints the current angle and velocity
+            g.setColor(Color.black);
+
+            int currentAngle = (int) (PO.getAngle() * (180/Math.PI));
+            double currentVelocity = (double) (Math.round(PO.getVelocity() * 100)) / 100;
+            double currentAngularVelocity = (double) Math.round((PO.getVelocity() / PO.getLength()) * 100) / 100;
+
+            g.drawString("Current Angle: " + currentAngle + " degrees", 3, 13);
+            g.drawString("Current Velocity: " + currentVelocity + " m/s", 3, 28);
+            g.drawString("Current Angular Velocity: " + currentAngularVelocity + " rad/s", 3, 43);
+
+            //calculates the points of the pendulum and fixed point
             pointX = getWidth()/2;
             pointY = getHeight()/10;
             pendulumX = pointX + (int) (Math.sin(PO.getAngle()) * PO.getLength()*100);
             pendulumY = pointY + (int) (Math.cos(PO.getAngle()) * PO.getLength()*100);
 
             //draws fixed point
+            g.setColor(Color.BLACK);
             g.drawLine(pointX, pointY, pendulumX, pendulumY);
             g.fillRoundRect(pointX - 5, pointY - 5,
                     10, 10, 10, 10);
 
-            //draws pendulum
+            //draws pendulum bob
             g.setColor(Color.RED);
             g.fillRoundRect(pendulumX - 10, pendulumY - 10,
                     20, 20, 20, 20);
@@ -167,6 +182,7 @@ public class Pendulum extends JFrame {
         }
 
         public void run(){
+            //gets current value of gravity and length of the pendulum
             PO.setGravity((double) gravityS.getValue() / 100);
             PO.setLength((double) lengthS.getValue() / 1000);
 
@@ -177,6 +193,7 @@ public class Pendulum extends JFrame {
         public void calculate(double gravity, double angleVelocity, double dt){
 
             while(true) {
+                //checks if the sliders have been moved
                 if (variableChanged) {
                     gravity = (double) gravityS.getValue() / 100;
                     PO.setLength((double) lengthS.getValue() / 1000);
@@ -184,21 +201,23 @@ public class Pendulum extends JFrame {
                     PO.setVelocity(0);
                     variableChanged = false;
                 }
+                //checks if the user has inputted data values to the text fields in the extra panel
                 if (TFSaved) {
                     PO.setLength((int) lengthExtra);
                     PO.setGravity(gravityExtra);
                     PO.setAngle(angleExtra);
                     PO.setDt(dtExtra);
-                    PO.setVelocity(velocityExtra * 100);
+                    PO.setVelocity(velocityExtra);
                     TFSaved = false;
                 }
 
-
+                //recalculates the velocity and angle of the pendulum and redraws the image
                 double angleAccel = (-1 * gravity) * Math.sin(PO.getAngle());
                 PO.setVelocity(PO.getVelocity() + angleAccel* PO.getDt());
                 PO.setAngle(PO.getAngle() + PO.getVelocity() * PO.getDt());
                 repaint();
 
+                //waits a certain amount of time that can be specified by the user
                 try {
                     Thread.sleep((long) (PO.getDt()*1000));
                 } catch (InterruptedException e) {
@@ -252,7 +271,10 @@ public class Pendulum extends JFrame {
         }
     }
 
+    //panel that is used to input data via text fields
     public class extraInputPanel extends JPanel{
+        //text fields and labels that display the current value with its unit and allows the user to input data
+        //text area used to display errors with the data that the user has inputted
         JTextField gravityTF, lengthTF, initAngleTF, dtTF, initVelocityTF;
         JLabel gravityL, lengthL, initAngleL, dtL, initVelocityL;
         JLabel gravityUnit, lengthUnit, initAngleUnit, dtUnit, initVelocityUnit;
@@ -260,6 +282,7 @@ public class Pendulum extends JFrame {
         JButton saveChanges;
 
         public extraInputPanel(){
+            //set layout and background colour of the extra input panel
             setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.insets = new Insets(3,3,3,3);
@@ -382,12 +405,15 @@ public class Pendulum extends JFrame {
         }
 
         public class saveChangesPressed implements ActionListener{
+            //initialise values that are used within the class. ""T is used to store a temporary variable that is being validated
             boolean isValidated = true;
             double lengthT = 5, gravityT = 9.81, initAngleT = 45, dtT = 0.1, initVelocityT = 0;
 
             public void actionPerformed(ActionEvent saveChangesPressed){
+                //re-validates data every time the saveChanges button is pressed
                 errors.setText("");
 
+                //makes sure gravity is a number and negative or above 20N/kg
                 try{
                     gravityT = Double.parseDouble(gravityTF.getText());
                 } catch (NumberFormatException nfe){
@@ -404,6 +430,7 @@ public class Pendulum extends JFrame {
 
                 if(gravityT < 0){
                     isValidated = false;
+                    gravityT = PO.getGravity();
                     if(errors.getText().equals("")) {
                         errors.setText("GRAVITY CANNOT BE LESS THAN 0");
                     }else{
@@ -413,6 +440,7 @@ public class Pendulum extends JFrame {
 
                 if(gravityT > 20){
                     isValidated = false;
+                    gravityT = PO.getGravity();
                     if(errors.getText().equals("")) {
                         errors.setText("GRAVITY CANNOT BE GREATER THAN 20");
                     }else{
@@ -422,7 +450,7 @@ public class Pendulum extends JFrame {
 
                 gravityS.setValue((int)(gravityT * 100));
 
-
+                //makes sure length is a number and isn't negative or above 10m
                 try{
                     lengthT = Double.parseDouble(lengthTF.getText());
                 }catch (NumberFormatException nfe){
@@ -439,6 +467,7 @@ public class Pendulum extends JFrame {
                 }
                 if(lengthT < 0){
                     isValidated = false;
+                    lengthT = PO.getLength();
                     if(errors.getText().equals("")) {
                         errors.setText("LENGTH CANNOT BE LESS THAN 0");
                     }else{
@@ -447,6 +476,7 @@ public class Pendulum extends JFrame {
                 }
                 if(lengthT > 10){
                     isValidated = false;
+                    lengthT = PO.getLength();
                     if(errors.getText().equals("")) {
                         errors.setText("LENGTH CANNOT BE GREATER THAN 10");
                     }else{
@@ -456,6 +486,7 @@ public class Pendulum extends JFrame {
 
                 lengthS.setValue((int) (lengthT * 1000));
 
+                //makes sure the initial angles specified is a number and not above 180 or below -180
                 try{
                     initAngleT = Double.parseDouble(initAngleTF.getText());
                 }catch (NumberFormatException NFE){
@@ -471,6 +502,7 @@ public class Pendulum extends JFrame {
                 }
                 if(initAngleT < -180){
                     isValidated = false;
+                    initAngleT = PO.getAngle();
                     if(errors.getText().equals("")) {
                         errors.setText("INITIAL ANGLE CANNOT BE LESS THAN -180");
                     }else{
@@ -479,6 +511,7 @@ public class Pendulum extends JFrame {
                 }
                 if(initAngleT > 180){
                     isValidated = false;
+                    initAngleT = PO.getAngle();
                     if(errors.getText().equals("")){
                         errors.setText("INITIAL ANGLE CANNOT BE GREATER THAN 180");
                     } else {
@@ -488,6 +521,7 @@ public class Pendulum extends JFrame {
 
                 initAngleS.setValue((int) initAngleT);
 
+                //makes sure the dt is a number an positive.
                 try {
                     dtT = Double.parseDouble(dtTF.getText());
                 } catch (NumberFormatException NFE){
@@ -503,6 +537,7 @@ public class Pendulum extends JFrame {
 
                 if(dtT < 0){
                     isValidated = false;
+                    dtT = PO.getAngle();
                     if(errors.getText().equals("")){
                         errors.setText("DT CANNOT BE LESS THAN 0");
                         dtT = 0.1;
@@ -511,8 +546,9 @@ public class Pendulum extends JFrame {
                     }
                 }
 
+                //makes sure the initial velocity specified is a number
                 try {
-                    initVelocityT = Double.parseDouble(initVelocityTF.getText()) / 100;
+                    initVelocityT = Double.parseDouble(initVelocityTF.getText());
                 }catch(NumberFormatException NFE){
                     isValidated = false;
                     initVelocityT = 0;
@@ -524,6 +560,7 @@ public class Pendulum extends JFrame {
                     }
                 }
 
+                //stores the validated temporary variables to the public ""Extra variables.
                 lengthExtra = lengthT;
                 gravityExtra = gravityT;
                 angleExtra = initAngleT * (Math.PI / 180);
@@ -537,6 +574,7 @@ public class Pendulum extends JFrame {
         }
     }
 
+    //create change listeners for all the sliders that set the current value of the slider to the corresponding label
     public class gravitySChanged implements ChangeListener{
         public void stateChanged(ChangeEvent e){
             double newGravity = (double) gravityS.getValue() / 100;
@@ -561,6 +599,7 @@ public class Pendulum extends JFrame {
         }
     }
 
+    //action listener for the extra button that creates a new JFrame for the extra inputs
     public class extraButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent extraButtonPressed){
             JFrame extraInputFrame = new JFrame();
@@ -573,6 +612,7 @@ public class Pendulum extends JFrame {
         }
     }
 
+    //main method sets the size and tits of the frame.
     public static void main(String[] args){
         Pendulum pendulum = new Pendulum();
         pendulum.setVisible(true);
@@ -584,6 +624,7 @@ public class Pendulum extends JFrame {
 }
 
 class pendulumObj{
+    //local variables of the pendulum object
     private double length, velocity, gravity, angle, dt;
 
     public pendulumObj(double len, double vel, double grav, double ang, double DT){

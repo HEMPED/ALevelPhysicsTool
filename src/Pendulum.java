@@ -161,6 +161,7 @@ public class Pendulum extends JFrame {
             g.drawString("Current Velocity: " + currentVelocity + " m/s", 3, 28);
             g.drawString("Current Angular Velocity: " + currentAngularVelocity + " rad/s", 3, 43);
 
+
             //calculates the points of the pendulum and fixed point
             pointX = getWidth()/2;
             pointY = getHeight()/10;

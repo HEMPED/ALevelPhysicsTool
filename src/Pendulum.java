@@ -157,10 +157,10 @@ public class Pendulum extends JFrame {
             double currentVelocity = (double) (Math.round(PO.getVelocity() * 100)) / 100;
             double currentAngularVelocity = (double) Math.round((PO.getVelocity() / PO.getLength()) * 100) / 100;
 
+
             g.drawString("Current Angle: " + currentAngle + " degrees", 3, 13);
             g.drawString("Current Velocity: " + currentVelocity + " m/s", 3, 28);
             g.drawString("Current Angular Velocity: " + currentAngularVelocity + " rad/s", 3, 43);
-
 
             //calculates the points of the pendulum and fixed point
             pointX = getWidth()/2;

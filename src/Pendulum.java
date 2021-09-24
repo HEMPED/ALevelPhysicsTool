@@ -1,3 +1,4 @@
+import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -8,7 +9,12 @@ import javax.swing.JLabel;
 
 public class Pendulum extends JFrame {
     //declare pendulum object
-    public pendulumObj PO = new pendulumObj(5, 0, 9.81, (Math.PI/4), 0.015);
+    public pendulumObj PO = new pendulumObj(5, 0, 0, 9.81, (Math.PI/4), (Math.PI/4), 0.015);
+
+    //initialise stacks and other variables that are used with the undo and redo functions
+    public Stack<pendulumObj> undoStack = new Stack<>();
+    public Stack<pendulumObj> redoStack = new Stack<>();
+    JButton undoB, redoB;
 
     //declare variables that are used for the sliders
     JSlider gravityS, lengthS, initAngleS;
@@ -99,9 +105,24 @@ public class Pendulum extends JFrame {
         //add extra button to the extra panel and adds the extra panel to the frame
         extraButton = new JButton("Click here for more inputs");
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
+        c.gridx = 1;
         c.gridy = 0;
         extraPanel.add(extraButton,c);
+
+        //add undo and redo buttons to the extra panel
+        undoB = new JButton("Undo");
+        undoB.setEnabled(false);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 0;
+        extraPanel.add(undoB, c);
+
+        redoB = new JButton("Redo");
+        redoB.setEnabled(false);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 2;
+        c.gridy = 0;
+        extraPanel.add(redoB, c);
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -111,6 +132,13 @@ public class Pendulum extends JFrame {
         //add action listener to the extra button
         extraButtonPressed EBP = new extraButtonPressed();
         extraButton.addActionListener(EBP);
+
+        //add action listener to the undo and redo button
+        undoButtonPressed UBP = new undoButtonPressed();
+        undoB.addActionListener(UBP);
+
+        redoButtonPressed RBP = new redoButtonPressed();
+        redoB.addActionListener(RBP);
 
         //initialise panel for the pendulum and makes it take up all available space in the window (weightx, weighty)
         PendulumPanel pendulumPanel = new PendulumPanel();
@@ -187,18 +215,28 @@ public class Pendulum extends JFrame {
             PO.setGravity((double) gravityS.getValue() / 100);
             PO.setLength((double) lengthS.getValue() / 1000);
 
-            calculate(PO.getGravity(), PO.getVelocity(), PO.getDt());
+            calculate();
 
         }
 
-        public void calculate(double gravity, double angleVelocity, double dt){
+        public void calculate(){
+            int angleInt;
 
             while(true) {
+
+                //saves old variables to undo stack if a variable is changed
+                if(variableChanged | TFSaved | clicked){
+                    undoStack.push(new pendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
+                    //allows the undo button to be clicked
+                    undoB.setEnabled(true);
+                }
+
                 //checks if the sliders have been moved
                 if (variableChanged) {
-                    gravity = (double) gravityS.getValue() / 100;
+                    PO.setGravity((double) gravityS.getValue() / 100);
                     PO.setLength((double) lengthS.getValue() / 1000);
-                    PO.setAngle(initAngleS.getValue() / (180 / Math.PI));
+                    PO.setInitialAngle(initAngleS.getValue() * (Math.PI/180));
+                    PO.setAngle(PO.getInitialAngle());
                     PO.setVelocity(0);
                     variableChanged = false;
                 }
@@ -206,14 +244,31 @@ public class Pendulum extends JFrame {
                 if (TFSaved) {
                     PO.setLength((int) lengthExtra);
                     PO.setGravity(gravityExtra);
-                    PO.setAngle(angleExtra);
+                    PO.setInitialAngle(angleExtra);
+                    PO.setAngle(PO.getInitialAngle());
                     PO.setDt(dtExtra);
-                    PO.setVelocity(velocityExtra);
+                    PO.setInitialVelocity(velocityExtra);
                     TFSaved = false;
+
+                    //sets the values of the sliders to the specified values
+                    gravityS.setValue((int)(PO.getGravity() * 100));
+
+                    angleInt = (int) (PO.getAngle() * (180 / Math.PI));
+                    initAngleS.setValue(angleInt);
+
+                    lengthS.setValue((int) (PO.getLength() * 1000));
+
+                    //sets the slider changed flag to false
+                    variableChanged = false;
+                }
+
+                if(clicked){
+                    clicked = false;
+                    variableChanged = false;
                 }
 
                 //recalculates the velocity and angle of the pendulum and redraws the image
-                double angleAccel = (-1 * gravity) * Math.sin(PO.getAngle());
+                double angleAccel = (-1 * PO.getGravity()) * Math.sin(PO.getAngle());
                 PO.setVelocity(PO.getVelocity() + angleAccel* PO.getDt());
                 PO.setAngle(PO.getAngle() + PO.getVelocity() * PO.getDt());
                 repaint();
@@ -250,7 +305,6 @@ public class Pendulum extends JFrame {
                 } else {
                     angle = Math.PI + Math.atan(diffX / diffY);
                 }
-
                 //set the values of sliders
                 lengthS.setValue((int) (length * 1000));
 
@@ -260,12 +314,6 @@ public class Pendulum extends JFrame {
                 }
 
                 initAngleS.setValue(angleInt);
-
-                //set the length, angle and resets velocity to 0 so no velocity is carried from the previous simulation
-                PO.setLength(length);
-                PO.setAngle(angle);
-                PO.setVelocity(0);
-
                 //trigger the flag
                 clicked = true;
             }
@@ -449,8 +497,6 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                gravityS.setValue((int)(gravityT * 100));
-
                 //makes sure length is a number and isn't negative or above 10m
                 try{
                     lengthT = Double.parseDouble(lengthTF.getText());
@@ -485,8 +531,6 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                lengthS.setValue((int) (lengthT * 1000));
-
                 //makes sure the initial angles specified is a number and not above 180 or below -180
                 try{
                     initAngleT = Double.parseDouble(initAngleTF.getText());
@@ -520,7 +564,7 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-                initAngleS.setValue((int) initAngleT);
+
 
                 //makes sure the dt is a number an positive.
                 try {
@@ -613,6 +657,68 @@ public class Pendulum extends JFrame {
         }
     }
 
+    //action listeners for the undo and redo buttons
+    public class undoButtonPressed implements ActionListener{
+        public void actionPerformed(ActionEvent undoButtonPressed){
+            if(!undoStack.empty()){
+                //gets the old values
+                pendulumObj POtemp = undoStack.pop();
+                //resets variables in the pendulum object to their old values
+                PO.setVelocity(POtemp.getInitialVelocity());
+                PO.setVelocity(POtemp.getInitialVelocity());
+                PO.setLength(POtemp.getLength());
+                PO.setInitialAngle(POtemp.getInitialAngle());
+                PO.setAngle(POtemp.getInitialAngle());
+                PO.setGravity(POtemp.getGravity());
+                PO.setDt(POtemp.getDt());
+
+                //resets sliders to their old values
+                int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
+
+
+                gravityS.setValue((int) (PO.getGravity() * 100));
+                lengthS.setValue((int) (PO.getLength() * 1000));
+                initAngleS.setValue(angleInt);
+
+                variableChanged = false;
+
+                //pushes the old values to the redo stack and allows the redo button to be pressed
+                redoStack.push(POtemp);
+
+                //disables the button if that was the last value in the stack
+                if(undoStack.empty()){
+                    undoB.setEnabled(false);
+                }
+            }
+        }
+    }
+
+    public class redoButtonPressed implements ActionListener{
+        public void actionPerformed(ActionEvent redoButtonPressed){
+            if(!redoStack.empty()){
+                //gets values from the redo stack
+                pendulumObj POtemp = redoStack.pop();
+
+                //restores values
+                PO.setVelocity(POtemp.getInitialVelocity());
+                PO.setVelocity(POtemp.getInitialVelocity());
+                PO.setLength(POtemp.getLength());
+                PO.setInitialAngle(POtemp.getInitialAngle());
+                PO.setAngle(POtemp.getInitialAngle());
+                PO.setGravity(POtemp.getGravity());
+                PO.setDt(POtemp.getDt());
+
+                //restores sliders
+                int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
+                gravityS.setValue((int) (PO.getGravity() * 100));
+                lengthS.setValue((int) (PO.getLength() * 1000));
+                initAngleS.setValue(angleInt);
+
+                variableChanged = false;
+            }
+        }
+    }
+
     //main method sets the size and tits of the frame.
     public static void main(String[] args){
         Pendulum pendulum = new Pendulum();
@@ -626,14 +732,16 @@ public class Pendulum extends JFrame {
 
 class pendulumObj{
     //local variables of the pendulum object
-    private double length, velocity, gravity, angle, dt;
+    private double length, velocity, gravity, angle, dt, initialAngle, initialVelocity;
 
-    public pendulumObj(double len, double vel, double grav, double ang, double DT){
+    public pendulumObj(double len, double vel, double initVel, double grav, double ang, double initAng, double DT){
         length = len;
         velocity = vel;
         gravity = grav;
         angle = ang;
         dt = DT;
+        initialAngle = initAng;
+        initialVelocity = initVel;
     }
 
     //getter methods for the pendulum object
@@ -657,6 +765,12 @@ class pendulumObj{
         return dt;
     }
 
+    public double getInitialVelocity(){
+        return initialVelocity;
+    }
+
+    public double getInitialAngle(){return initialAngle;}
+
     //setter methods for the pendulum object
     public void setLength(double len){
         length = len;
@@ -676,5 +790,12 @@ class pendulumObj{
 
     public void setDt(double DT){
         dt = DT;
+    }
+
+    public void setInitialAngle(double ang){
+        initialAngle = ang;}
+
+    public void setInitialVelocity(double velocity){
+        initialVelocity = velocity;
     }
 }

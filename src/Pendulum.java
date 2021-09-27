@@ -1,3 +1,5 @@
+import java.time.Clock;
+import java.time.Instant;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -5,6 +7,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Timer;
 import javax.swing.JLabel;
 
 public class Pendulum extends JFrame {
@@ -157,7 +160,9 @@ public class Pendulum extends JFrame {
     public class PendulumPanel extends JPanel implements Runnable{
 
         //initialise integers that are used to draw the pendulum
-        public int pendulumX, pendulumY, pointX, pointY;
+        int pendulumX, pendulumY, pointX, pointY;
+        //initialise variables that are used for the stopwatch
+        long start, end;
 
         public PendulumPanel(){
             setLayout(new FlowLayout());
@@ -215,15 +220,20 @@ public class Pendulum extends JFrame {
             PO.setGravity((double) gravityS.getValue() / 100);
             PO.setLength((double) lengthS.getValue() / 1000);
 
+            start = System.currentTimeMillis();
             calculate();
+        }
 
+        public void calculateTimePeriod(){
+            double timePeriod;
         }
 
         public void calculate(){
             int angleInt;
+            boolean alreadyDone = false;
 
             while(true) {
-
+                end = System.currentTimeMillis();
                 //saves old variables to undo stack if a variable is changed
                 if(variableChanged | TFSaved | clicked){
                     undoStack.push(new pendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
@@ -269,13 +279,28 @@ public class Pendulum extends JFrame {
 
                 //recalculates the velocity and angle of the pendulum and redraws the image
                 double angleAccel = (-1 * PO.getGravity()) * Math.sin(PO.getAngle());
-                PO.setVelocity(PO.getVelocity() + angleAccel* PO.getDt());
-                PO.setAngle(PO.getAngle() + PO.getVelocity() * PO.getDt());
+                //makes sure the program is not assuming that the velocity is not constantly increasing when the angle is 180 degrees
+                if(PO.getAngle() == -Math.PI || PO.getAngle() == Math.PI){
+                    PO.setVelocity(0);
+                }
+                PO.setVelocity(PO.getVelocity() + angleAccel* 0.015);
+                PO.setAngle(PO.getAngle() + PO.getVelocity() * 0.015);
+                if(PO.getAngle() == -Math.PI || PO.getAngle() == Math.PI){
+                    PO.setVelocity(0);
+                }
                 repaint();
+
+                //timer for plotting points on the graph
+                long diff = end - start;
+                if(diff > 3000 && PO.getAngle() > PO.getInitialAngle() - 0.2 && PO.getAngle() < PO.getInitialAngle() + 0.2 && !alreadyDone){
+                    gravitySL.setText("" + (diff / (double) 1000));
+                    alreadyDone = true;
+                }
+                lengthSL.setText("" + end);
 
                 //waits a certain amount of time that can be specified by the user
                 try {
-                    Thread.sleep((long) (PO.getDt()*1000));
+                    Thread.sleep((long) (PO.getDt() * 2300));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -661,6 +686,9 @@ public class Pendulum extends JFrame {
     public class undoButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent undoButtonPressed){
             if(!undoStack.empty()){
+                //adds current values to the redo stack
+                redoStack.push(new pendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
+
                 //gets the old values
                 pendulumObj POtemp = undoStack.pop();
                 //resets variables in the pendulum object to their old values
@@ -675,19 +703,20 @@ public class Pendulum extends JFrame {
                 //resets sliders to their old values
                 int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
 
-
                 gravityS.setValue((int) (PO.getGravity() * 100));
                 lengthS.setValue((int) (PO.getLength() * 1000));
                 initAngleS.setValue(angleInt);
 
                 variableChanged = false;
 
-                //pushes the old values to the redo stack and allows the redo button to be pressed
-                redoStack.push(POtemp);
-
                 //disables the button if that was the last value in the stack
                 if(undoStack.empty()){
                     undoB.setEnabled(false);
+                }
+
+                //enables the redo button
+                if(!redoB.isEnabled()){
+                    redoB.setEnabled(true);
                 }
             }
         }
@@ -699,7 +728,7 @@ public class Pendulum extends JFrame {
                 //gets values from the redo stack
                 pendulumObj POtemp = redoStack.pop();
 
-                //restores values
+                //resets variables in the pendulum object to their old values
                 PO.setVelocity(POtemp.getInitialVelocity());
                 PO.setVelocity(POtemp.getInitialVelocity());
                 PO.setLength(POtemp.getLength());
@@ -708,13 +737,27 @@ public class Pendulum extends JFrame {
                 PO.setGravity(POtemp.getGravity());
                 PO.setDt(POtemp.getDt());
 
-                //restores sliders
+                //resets sliders to their old values
                 int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
+
                 gravityS.setValue((int) (PO.getGravity() * 100));
                 lengthS.setValue((int) (PO.getLength() * 1000));
                 initAngleS.setValue(angleInt);
 
                 variableChanged = false;
+
+                //pushes the old values to the redo stack and allows the redo button to be pressed
+                undoStack.push(new pendulumObj(POtemp.getLength(), POtemp.getVelocity(), POtemp.getInitialVelocity(), POtemp.getGravity(), POtemp.getAngle(), POtemp.getInitialAngle(), POtemp.getDt()));
+
+                //enables undo button if it was disabled
+                if(!undoB.isEnabled()){
+                    undoB.setEnabled(true);
+                }
+
+                //disables redo button if that was the last pendulum object in the stack
+                if(redoStack.empty()){
+                    redoB.setEnabled(false);
+                }
             }
         }
     }

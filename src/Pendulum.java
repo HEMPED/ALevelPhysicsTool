@@ -1,5 +1,3 @@
-import java.time.Clock;
-import java.time.Instant;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -7,7 +5,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Timer;
 import javax.swing.JLabel;
 
 public class Pendulum extends JFrame {
@@ -171,7 +168,7 @@ public class Pendulum extends JFrame {
             setPreferredSize(d);
             setDoubleBuffered(true);
 
-            //add mouse listener which listens to clicks of the mouse
+            //add mouse listener which allows the pendulum to be set to a certain position
             MListener mouseListener = new MListener();
             addMouseListener(mouseListener);
         }
@@ -182,6 +179,7 @@ public class Pendulum extends JFrame {
             //fills the background
             g.setColor(Color.white);
             g.fillRect(0,0,getWidth(),getHeight());
+
 
             //initialise the overlay which prints the current angle and velocity
             g.setColor(Color.black);
@@ -194,6 +192,7 @@ public class Pendulum extends JFrame {
             g.drawString("Current Angle: " + currentAngle + " degrees", 3, 13);
             g.drawString("Current Velocity: " + currentVelocity + " m/s", 3, 28);
             g.drawString("Current Angular Velocity: " + currentAngularVelocity + " rad/s", 3, 43);
+            g.drawString("Current angle rad: " + PO.getAngle(), 3, 58);
 
             //calculates the points of the pendulum and fixed point
             pointX = getWidth()/2;
@@ -224,16 +223,11 @@ public class Pendulum extends JFrame {
             calculate();
         }
 
-        public void calculateTimePeriod(){
-            double timePeriod;
-        }
-
         public void calculate(){
             int angleInt;
-            boolean alreadyDone = false;
+            double angleAccel;
 
             while(true) {
-                end = System.currentTimeMillis();
                 //saves old variables to undo stack if a variable is changed
                 if(variableChanged | TFSaved | clicked){
                     undoStack.push(new pendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
@@ -278,7 +272,7 @@ public class Pendulum extends JFrame {
                 }
 
                 //recalculates the velocity and angle of the pendulum and redraws the image
-                double angleAccel = (-1 * PO.getGravity()) * Math.sin(PO.getAngle());
+                angleAccel = Math.sin(PO.getAngle()) * -1 * PO.getGravity();
                 //makes sure the program is not assuming that the velocity is not constantly increasing when the angle is 180 degrees
                 if(PO.getAngle() == -Math.PI || PO.getAngle() == Math.PI){
                     PO.setVelocity(0);
@@ -288,15 +282,20 @@ public class Pendulum extends JFrame {
                 if(PO.getAngle() == -Math.PI || PO.getAngle() == Math.PI){
                     PO.setVelocity(0);
                 }
-                repaint();
 
-                //timer for plotting points on the graph
-                long diff = end - start;
-                if(diff > 3000 && PO.getAngle() > PO.getInitialAngle() - 0.2 && PO.getAngle() < PO.getInitialAngle() + 0.2 && !alreadyDone){
-                    gravitySL.setText("" + (diff / (double) 1000));
-                    alreadyDone = true;
+                //calculates the displacement of the pendulum (for the graph)
+                double equilibriumX = pointX;
+                double equilibriumY = pointY + PO.getLength();
+                double displacement = Math.pow((equilibriumX - pendulumX), 2) + Math.pow((equilibriumY - pendulumY), 2);
+                displacement = Math.pow(displacement, 0.5);
+                displacement = displacement / (double) 100;
+
+                if(PO.getAngle() < 0){
+                    displacement = displacement * -1;
                 }
-                lengthSL.setText("" + end);
+
+                //redraws the image
+                repaint();
 
                 //waits a certain amount of time that can be specified by the user
                 try {

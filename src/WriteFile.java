@@ -8,5 +8,20 @@ import java.awt.*;
 import java.util.*;
 
 public class WriteFile {
+    static Scanner in = new Scanner(System.in);
+    public WriteFile(){
 
+    }
+
+    public static void start(String directory, String strToWrite){
+        try {
+            FileWriter myWriter = new FileWriter(directory);
+            myWriter.write(strToWrite);
+            myWriter.close();
+        }catch (IOException e){e.printStackTrace();}
+    }
+
+    public static void main(String[] args){
+
+    }
 }

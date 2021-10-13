@@ -10,6 +10,9 @@ import java.util.*;
 public class OpenFile {
 
     public OpenFile(){
+    }
+
+    public static void start(){
         JFrame frame = new JFrame();
         frame.setVisible(false);
         FileChooser fileChooser = new FileChooser();
@@ -42,7 +45,6 @@ public class OpenFile {
 
             if(chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
                 directory = chooser.getSelectedFile();
-                System.out.println("" + directory);
             }
 
             status = false;
@@ -58,6 +60,6 @@ public class OpenFile {
     }
 
     public static void main(String[] args){
-
+        start();
     }
 }

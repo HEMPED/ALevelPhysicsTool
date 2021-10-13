@@ -21,6 +21,17 @@ public class CreateFile{
         if(fileCreator.getStatus() == false){
             System.exit(0);
         }
+
+        try {
+            File file = new File(String.valueOf(FileCreator.getDirectory()));
+            if (file.createNewFile()) {
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
     }
 
     static class FileCreator extends FileChooser{

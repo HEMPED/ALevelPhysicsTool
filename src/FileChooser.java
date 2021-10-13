@@ -32,7 +32,7 @@ public class FileChooser extends JPanel {
         return status;
     }
 
-    public File getDirectory(){
+    public static File getDirectory(){
         return directory;
     }
 }

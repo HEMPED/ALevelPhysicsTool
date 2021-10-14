@@ -5,7 +5,7 @@ import java.io.File;
 public class FileChooser extends JPanel {
     static JFileChooser chooser;
     boolean status = true;
-    File directory;
+    static File directory;
 
     public FileChooser(){
     }
@@ -31,6 +31,8 @@ public class FileChooser extends JPanel {
     public boolean getStatus(){
         return status;
     }
+
+    public void setStatus(boolean s){status = s;}
 
     public static File getDirectory(){
         return directory;

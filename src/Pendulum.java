@@ -1,11 +1,12 @@
-import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
-import java.awt.event.*;
-import javax.swing.JLabel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.util.Stack;
 
 public class Pendulum extends JFrame {
     //declare pendulum object
@@ -20,6 +21,10 @@ public class Pendulum extends JFrame {
     JSlider gravityS, lengthS, initAngleS;
     JLabel gravitySL, lengthSL, initAngleSL, overlayL;
     boolean variableChanged = false;
+
+    //declare variables that are used for the menu bar
+    JMenuBar menuBar;
+    JButton saveB, loadB;
 
     //declare variables that are used in the extra input panel
     JButton extraButton;
@@ -47,6 +52,26 @@ public class Pendulum extends JFrame {
         JPanel extraPanel = new JPanel();
         extraPanel.setBackground(Color.WHITE);
         extraPanel.setLayout(new GridBagLayout());
+
+        //menuBar
+        menuBar = new JMenuBar();
+
+        saveB = new JButton("Save");
+        saveB.setOpaque(true);
+        saveB.setContentAreaFilled(false);
+        saveB.setBorderPainted(false);
+        saveB.setFocusable(false);
+
+        loadB = new JButton("Load");
+        loadB.setOpaque(true);
+        loadB.setContentAreaFilled(false);
+        loadB.setBorderPainted(false);
+        loadB.setFocusable(false);
+
+        menuBar.add(saveB);
+        menuBar.add(loadB);
+
+        setJMenuBar(menuBar);
 
         //create sliders and their labels
         gravityS = new JSlider(JSlider.HORIZONTAL,0,2000,981);
@@ -192,7 +217,6 @@ public class Pendulum extends JFrame {
             g.drawString("Current Angle: " + currentAngle + " degrees", 3, 13);
             g.drawString("Current Velocity: " + currentVelocity + " m/s", 3, 28);
             g.drawString("Current Angular Velocity: " + currentAngularVelocity + " rad/s", 3, 43);
-            g.drawString("Current angle rad: " + PO.getAngle(), 3, 58);
 
             //calculates the points of the pendulum and fixed point
             pointX = getWidth()/2;
@@ -668,6 +692,19 @@ public class Pendulum extends JFrame {
         }
     }
 
+    //action listeners for the menubar
+    public class saveButtonPressed implements ActionListener{
+        public void actionPerformed(ActionEvent saveButtonPressed){
+
+        }
+    }
+
+    public class loadButtonPressed implements ActionListener{
+        public void actionPerformed(ActionEvent loadButtonPressed){
+
+        }
+    }
+
     //action listener for the extra button that creates a new JFrame for the extra inputs
     public class extraButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent extraButtonPressed){
@@ -759,6 +796,12 @@ public class Pendulum extends JFrame {
                 }
             }
         }
+    }
+
+    //Getter Methods
+
+    public Object getPendulumObject(){
+        return PO;
     }
 
     //main method sets the size and tits of the frame.

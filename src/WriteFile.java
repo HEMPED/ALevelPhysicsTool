@@ -7,21 +7,18 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class WriteFile {
-    static Scanner in = new Scanner(System.in);
-    public WriteFile(){
 
-    }
-
-    public static void start(String directory, String strToWrite){
-        try {
-            FileWriter myWriter = new FileWriter(directory);
-            myWriter.write(strToWrite);
-            myWriter.close();
-        }catch (IOException e){e.printStackTrace();}
+    public static void start(File directory, Object obj) throws IOException{
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(directory, obj);
     }
 
     public static void main(String[] args){
-
     }
 }

@@ -17,7 +17,7 @@ public class FileChooser extends JPanel {
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Select File");
 
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("text files", "txt", "text");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("json files", "json");
         chooser.setFileFilter(filter);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 

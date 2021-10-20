@@ -37,8 +37,6 @@ public class CreateFile{
                 } else {
                     if(canDelete){
                         file.delete();
-                        System.out.println("can delete");
-                        System.out.println(file);
                         canDelete = false;
                     }
                     if (!fileCreated) {
@@ -114,7 +112,7 @@ public class CreateFile{
             chooser.setCurrentDirectory(new java.io.File("."));
             chooser.setDialogTitle("Create File");
 
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("text files", "txt", "text");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("json files", "json");
             chooser.setFileFilter(filter);
             chooser.setFileSelectionMode(JFileChooser.APPROVE_OPTION);
 

@@ -7,9 +7,11 @@ import java.awt.FileDialog;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 public class Load extends Save {
     int returnValue = 0;
+    boolean fileChosen = false;
 
     public Load(){
     }
@@ -25,11 +27,10 @@ public class Load extends Save {
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             directory = chooser.getSelectedFile();
             System.out.println(directory.getAbsolutePath());
+            fileChosen = true;
         }
     }
 
     public static void main(String[] args){
-        Load l = new Load();
-        l.openExplorer();
     }
 }

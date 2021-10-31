@@ -1,3 +1,7 @@
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -6,6 +10,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.Stack;
 
 public class Pendulum extends JFrame {
@@ -19,7 +25,7 @@ public class Pendulum extends JFrame {
 
     //declare variables that are used for the sliders
     JSlider gravityS, lengthS, initAngleS;
-    JLabel gravitySL, lengthSL, initAngleSL, overlayL;
+    JLabel gravitySL, lengthSL, initAngleSL;
     boolean variableChanged = false;
 
     //declare variables that are used for the menu bar
@@ -62,11 +68,17 @@ public class Pendulum extends JFrame {
         saveB.setBorderPainted(false);
         saveB.setFocusable(false);
 
+        saveButtonPressed SBP = new saveButtonPressed();
+        saveB.addActionListener(SBP);
+
         loadB = new JButton("Load");
         loadB.setOpaque(true);
         loadB.setContentAreaFilled(false);
         loadB.setBorderPainted(false);
         loadB.setFocusable(false);
+
+        loadButtonPressed LBP = new loadButtonPressed();
+        loadB.addActionListener(LBP);
 
         menuBar.add(saveB);
         menuBar.add(loadB);
@@ -187,11 +199,11 @@ public class Pendulum extends JFrame {
         long start, end;
 
         public PendulumPanel(){
+            //super(true);
             setLayout(new FlowLayout());
             setBackground(Color.DARK_GRAY);
             Dimension d = new Dimension(500, 500);
             setPreferredSize(d);
-            setDoubleBuffered(true);
 
             //add mouse listener which allows the pendulum to be set to a certain position
             MListener mouseListener = new MListener();
@@ -695,13 +707,19 @@ public class Pendulum extends JFrame {
     //action listeners for the menubar
     public class saveButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent saveButtonPressed){
-
+            Save save = new Save();
+            save.openExplorer();
+            save.start(PO);
         }
     }
 
     public class loadButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent loadButtonPressed){
-
+            Load load = new Load();
+            if(load.fileChosen) {
+                load.openExplorer();
+                read(load.getDirectory());
+            }
         }
     }
 
@@ -798,8 +816,32 @@ public class Pendulum extends JFrame {
         }
     }
 
-    //Getter Methods
+    //Method to read values from file
+    public void read(File directory){
+        try{
+            ObjectMapper mapper = new ObjectMapper();
 
+            pendulumObj POTemp = mapper.readValue(directory, pendulumObj.class);
+
+            PO.setVelocity(POTemp.getVelocity());
+            PO.setAngle(POTemp.getInitialAngle());
+            PO.setGravity(POTemp.getGravity());
+            PO.setLength(POTemp.getLength());
+            PO.setInitialAngle(POTemp.getInitialAngle());
+            PO.setDt(PO.getDt());
+            PO.setInitialVelocity(PO.getInitialVelocity());
+
+        } catch (StreamReadException e) {
+            e.printStackTrace();
+        } catch (DatabindException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //Getter Methods
     public Object getPendulumObject(){
         return PO;
     }
@@ -811,76 +853,6 @@ public class Pendulum extends JFrame {
         pendulum.setSize(800,800);
         pendulum.setExtendedState(JFrame.MAXIMIZED_BOTH);
         pendulum.setTitle("Pendulum");
-        pendulum.setLocation(100, 50);
-    }
-}
-
-class pendulumObj{
-    //local variables of the pendulum object
-    private double length, velocity, gravity, angle, dt, initialAngle, initialVelocity;
-
-    public pendulumObj(double len, double vel, double initVel, double grav, double ang, double initAng, double DT){
-        length = len;
-        velocity = vel;
-        gravity = grav;
-        angle = ang;
-        dt = DT;
-        initialAngle = initAng;
-        initialVelocity = initVel;
-    }
-
-    //getter methods for the pendulum object
-    public double getLength(){
-        return length;
-    }
-
-    public double getVelocity(){
-        return velocity;
-    }
-
-    public double getGravity(){
-        return gravity;
-    }
-
-    public double getAngle(){
-        return angle;
-    }
-
-    public double getDt(){
-        return dt;
-    }
-
-    public double getInitialVelocity(){
-        return initialVelocity;
-    }
-
-    public double getInitialAngle(){return initialAngle;}
-
-    //setter methods for the pendulum object
-    public void setLength(double len){
-        length = len;
-    }
-
-    public void setVelocity(double vel){
-        velocity = vel;
-    }
-
-    public void setGravity(double grav){
-        gravity = grav;
-    }
-
-    public void setAngle(double ang){
-        angle = ang;
-    }
-
-    public void setDt(double DT){
-        dt = DT;
-    }
-
-    public void setInitialAngle(double ang){
-        initialAngle = ang;}
-
-    public void setInitialVelocity(double velocity){
-        initialVelocity = velocity;
+        pendulum.setLocation(0, 0);
     }
 }

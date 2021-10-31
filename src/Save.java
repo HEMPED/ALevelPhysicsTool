@@ -4,15 +4,11 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
+
 public class Save extends JPanel {
-    static JFileChooser chooser;
-    boolean status = true;
     static File directory;
     String fileName;
     String directoryString = ".";
@@ -52,8 +48,49 @@ public class Save extends JPanel {
         mapper.writeValue(directory, obj);
     }
 
+    private String getExtension() {
+        if(directory!=null) {
+            String name = directory.getName();
+            int lastIndexOf = name.lastIndexOf(".");
+            if (lastIndexOf == -1) {
+                return "";
+            }
+            return name.substring(lastIndexOf);
+        } else {
+            return "";
+        }
+    }
+
+    private void renameFile(){
+        int i = directory.getName().lastIndexOf(".");
+        if(i == -1){
+            directoryString = directory.getName();
+        } else {
+            directoryString = directory.getName().substring(0,i);
+        }
+        directory = new File(directory.getParent(), directoryString + ".json");
+        System.out.println(directory);
+    }
+
     public static File getDirectory(){
         return directory;
+    }
+
+    public void start(Object obj){
+        if (getExtension().equals("json")) {
+            try {
+                write(directory, obj);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            renameFile();
+            try {
+                write(directory, obj);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static void main(String[] args){

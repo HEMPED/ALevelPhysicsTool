@@ -14,6 +14,7 @@ public class Load extends Save {
     boolean fileChosen = false;
 
     public Load(){
+        fileChosen = false;
     }
 
     @Override
@@ -29,6 +30,10 @@ public class Load extends Save {
             System.out.println(directory.getAbsolutePath());
             fileChosen = true;
         }
+    }
+
+    public boolean getFileChosen(){
+        return fileChosen;
     }
 
     public static void main(String[] args){

@@ -716,8 +716,8 @@ public class Pendulum extends JFrame {
     public class loadButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent loadButtonPressed){
             Load load = new Load();
-            if(load.fileChosen) {
-                load.openExplorer();
+            load.openExplorer();
+            if(load.getFileChosen() == true) {
                 read(load.getDirectory());
             }
         }
@@ -830,6 +830,17 @@ public class Pendulum extends JFrame {
             PO.setInitialAngle(POTemp.getInitialAngle());
             PO.setDt(PO.getDt());
             PO.setInitialVelocity(PO.getInitialVelocity());
+
+            //sets the values of the sliders to the specified values
+            gravityS.setValue((int)(PO.getGravity() * 100));
+
+            int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
+            initAngleS.setValue(angleInt);
+
+            lengthS.setValue((int) (PO.getLength() * 1000));
+
+            //sets the slider changed flag to false
+            variableChanged = false;
 
         } catch (StreamReadException e) {
             e.printStackTrace();

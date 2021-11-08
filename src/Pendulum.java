@@ -779,6 +779,9 @@ public class Pendulum extends JFrame {
     public class redoButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent redoButtonPressed){
             if(!redoStack.empty()){
+                //pushes the old values to the redo stack and allows the redo button to be pressed
+                undoStack.push(new pendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
+
                 //gets values from the redo stack
                 pendulumObj POtemp = redoStack.pop();
 
@@ -799,9 +802,6 @@ public class Pendulum extends JFrame {
                 initAngleS.setValue(angleInt);
 
                 variableChanged = false;
-
-                //pushes the old values to the redo stack and allows the redo button to be pressed
-                undoStack.push(new pendulumObj(POtemp.getLength(), POtemp.getVelocity(), POtemp.getInitialVelocity(), POtemp.getGravity(), POtemp.getAngle(), POtemp.getInitialAngle(), POtemp.getDt()));
 
                 //enables undo button if it was disabled
                 if(!undoB.isEnabled()){

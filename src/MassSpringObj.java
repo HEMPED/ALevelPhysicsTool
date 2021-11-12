@@ -5,11 +5,14 @@ public class MassSpringObj {
     public MassSpringObj() {
 
     }
-    public MassSpringObj(double springConstant, double gravity, double displacement, double length) {
+
+    public MassSpringObj(double springConstant, double gravity, double displacement, double length, double mass, double amplitude) {
         this.springConstant = springConstant;
         this.gravity = gravity;
         this.displacement = displacement;
         this.length = length;
+        this.mass = mass;
+        this.amplitude = amplitude;
     }
 
     //getter methods

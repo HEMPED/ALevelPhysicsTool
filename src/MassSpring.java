@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.sql.Array;
 import java.util.*;
@@ -8,6 +10,7 @@ public class MassSpring extends JFrame {
     JPanel sliderPanel;
     JSlider massS, gravityS, extensionS;
     JLabel massSL, gravitySL, extensionSL;
+    MassSpringObj MSO = new MassSpringObj(15,9.81, 3, 7, 2, 3);
 
     public MassSpring(){
         setLayout(new GridBagLayout());
@@ -30,13 +33,13 @@ public class MassSpring extends JFrame {
         c.gridy = 2;
         sliderPanel.add(massS, c);
 
-        extensionS = new JSlider(JSlider.HORIZONTAL, -700, 700, 0);
+        extensionS = new JSlider(JSlider.HORIZONTAL, -700, 700, 300);
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 4;
         sliderPanel.add(extensionS, c);
 
-        gravitySL = new JLabel("Gravity: 9.81m/s");
+        gravitySL = new JLabel("Gravity: 9.81N/kg");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 1;
@@ -48,11 +51,20 @@ public class MassSpring extends JFrame {
         c.gridy = 3;
         sliderPanel.add(massSL, c);
 
-        extensionSL = new JLabel("Extension: 0m");
+        extensionSL = new JLabel("Extension: 3.0cm");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 5;
         sliderPanel.add(extensionSL, c);
+
+        gravitySChanged GSC = new gravitySChanged();
+        gravityS.addChangeListener(GSC);
+
+        massSChanged MSC = new massSChanged();
+        massS.addChangeListener(MSC);
+
+        extensionSChanged ESC = new extensionSChanged();
+        extensionS.addChangeListener(ESC);
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 1;
@@ -72,7 +84,6 @@ public class MassSpring extends JFrame {
 
     public class MassSpringPanel extends JPanel implements Runnable{
         ArrayList<Point> points = new ArrayList<>();
-        MassSpringObj MSO = new MassSpringObj(15,9.81, 0.5, 1);
         double time;
 
         public MassSpringPanel(){
@@ -167,13 +178,10 @@ public class MassSpring extends JFrame {
                 currentTime = System.currentTimeMillis();
                 time = (double) (currentTime - startTime) / 1000;
 
-                MSO.setAmplitude(0.5);
-                MSO.setMass(1);
-                MSO.setSpringConstant(15);
                 calculateTimePeriod();
                 calculateDisplacement();
 
-                calculatePoints((int) ((MSO.getLength() + MSO.getDisplacement()) * 200));
+                calculatePoints((int) ((MSO.getLength() + MSO.getDisplacement()) * 50));
 
                 repaint();
                 try{
@@ -184,9 +192,38 @@ public class MassSpring extends JFrame {
         }
     }
 
+    public class gravitySChanged implements ChangeListener{
+
+        public void stateChanged(ChangeEvent e) {
+            double newGravity = (double) gravityS.getValue() / 100;
+            gravitySL.setText("Gravity: " + newGravity + "N/kg");
+            MSO.setGravity(newGravity);
+        }
+    }
+
+    public class massSChanged implements ChangeListener{
+
+        public void stateChanged(ChangeEvent e) {
+            double newMass = (double) massS.getValue() / 100;
+            massSL.setText("Mass: " + newMass + "kg");
+            MSO.setMass(newMass);
+        }
+    }
+
+    public class extensionSChanged implements ChangeListener{
+
+        public void stateChanged(ChangeEvent e) {
+            double newExtension = (double) extensionS.getValue() / 100;
+            extensionSL.setText("Extension: " + newExtension + "cm");
+            MSO.setAmplitude(newExtension);
+            MSO.setDisplacement(newExtension);
+        }
+    }
+
+
     public static void main(String[] args){
         MassSpring frame = new MassSpring();
-        frame.pack();
+        frame.getContentPane().setBackground(Color.white);
         frame.setSize(new Dimension(800, 800));
         frame.setTitle("Mass Spring System");
         frame.setLocation(0, 0);

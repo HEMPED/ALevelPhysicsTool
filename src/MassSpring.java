@@ -2,12 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.Array;
 import java.util.*;
+import java.util.Timer;
 
 public class MassSpring extends JFrame {
     JPanel sliderPanel;
     JSlider massS, gravityS, extensionS;
     JLabel massSL, gravitySL, extensionSL;
-    int length = 100;
 
     public MassSpring(){
         setLayout(new GridBagLayout());
@@ -26,14 +26,14 @@ public class MassSpring extends JFrame {
 
         massS = new JSlider(JSlider.HORIZONTAL, 0, 1000, 200);
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 1;
-        c.gridy = 0;
+        c.gridx = 0;
+        c.gridy = 2;
         sliderPanel.add(massS, c);
 
         extensionS = new JSlider(JSlider.HORIZONTAL, -700, 700, 0);
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 2;
-        c.gridy = 0;
+        c.gridx = 0;
+        c.gridy = 4;
         sliderPanel.add(extensionS, c);
 
         gravitySL = new JLabel("Gravity: 9.81m/s");
@@ -44,14 +44,14 @@ public class MassSpring extends JFrame {
 
         massSL = new JLabel("Mass: 2kg");
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 1;
-        c.gridy = 1;
+        c.gridx = 0;
+        c.gridy = 3;
         sliderPanel.add(massSL, c);
 
         extensionSL = new JLabel("Extension: 0m");
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 2;
-        c.gridy = 1;
+        c.gridx = 0;
+        c.gridy = 5;
         sliderPanel.add(extensionSL, c);
 
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -71,7 +71,9 @@ public class MassSpring extends JFrame {
 
 
     public class MassSpringPanel extends JPanel implements Runnable{
-        ArrayList<Point> points = new ArrayList<Point>();
+        ArrayList<Point> points = new ArrayList<>();
+        MassSpringObj MSO = new MassSpringObj(15,9.81, 0.5, 1);
+        double time;
 
         public MassSpringPanel(){
             setLayout(new FlowLayout());
@@ -80,10 +82,17 @@ public class MassSpring extends JFrame {
 
         @Override
         public void paint(Graphics g){
-            g.setColor(Color.white);
-            g.fillRect(0,0,getWidth(),getHeight());
+            Graphics2D g1 = (Graphics2D)g;
+            RenderingHints rh = new RenderingHints(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g1.setRenderingHints(rh);
 
-            g.setColor(Color.black);
+            g1.setColor(Color.white);
+            g1.fillRect(0,0,getWidth(),getHeight());
+
+            g1.setColor(Color.black);
+
             for(int x = 0; x < points.size(); x++){
                 Point p = points.get(x);
 
@@ -96,7 +105,13 @@ public class MassSpring extends JFrame {
                     int prevXVal = (int) prevPoint.getX();
                     int prevYVal = (int) prevPoint.getY();
 
-                    g.drawLine(prevXVal, prevYVal, xVal, yVal);
+                    g1.drawLine(prevXVal, prevYVal, xVal, yVal);
+                }
+
+                if(x == points.size() - 1){
+                    g1.drawLine(xVal, yVal, xVal, yVal + 10);
+                    g1.setColor(Color.red);
+                    g1.fillRect((xVal - 20), yVal + 10, 40, 40);
                 }
             }
         }
@@ -111,6 +126,7 @@ public class MassSpring extends JFrame {
 
             points.clear();
 
+            points.add(new Point((anchorX + 50), (anchorY - 15)));
             points.add(new Point(anchorX, anchorY));
 
             for(int x = 1; x < 30; x++){
@@ -123,36 +139,43 @@ public class MassSpring extends JFrame {
                 pointY = anchorY + changeInLength * x;
 
                 points.add(new Point(pointX, pointY));
+
+                if(x == 29){
+                    points.add(new Point((pointX - 50), (pointY + 15)));
+                }
             }
         }
 
+        private double calculateTimePeriod(){
+            double timePeriod = 2 * Math.PI * Math.pow((MSO.getMass() / MSO.getSpringConstant()), 0.5);
+            double angularVelocity = (2 * Math.PI) / timePeriod;
+            MSO.setAngularVelocity(angularVelocity);
+
+            return timePeriod;
+        }
+
+        private void calculateDisplacement(){
+            double displacement = MSO.getAmplitude() * Math.cos(MSO.getAngularVelocity() * time);
+            MSO.setDisplacement(displacement);
+        }
+
         public void run() {
+            long startTime = System.currentTimeMillis();
+            long currentTime;
+
             while(true) {
+                currentTime = System.currentTimeMillis();
+                time = (double) (currentTime - startTime) / 1000;
+
+                MSO.setAmplitude(0.5);
+                MSO.setMass(1);
+                MSO.setSpringConstant(15);
+                calculateTimePeriod();
+                calculateDisplacement();
+
+                calculatePoints((int) ((MSO.getLength() + MSO.getDisplacement()) * 200));
+
                 repaint();
-                calculatePoints(length);
-
-                if(length < 600){
-                    while(length < 600) {
-                        length = length + 2;
-                        calculatePoints(length);
-                        repaint();
-                        try{
-                            Thread.sleep(5);
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                } else {
-                    while(length > 100) {
-                        length = length - 2;
-                        calculatePoints(length);
-                        repaint();
-                        try{
-                            Thread.sleep(5);
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                }
-
                 try{
                     Thread.sleep(5);
                 } catch (InterruptedException e) {
@@ -164,7 +187,7 @@ public class MassSpring extends JFrame {
     public static void main(String[] args){
         MassSpring frame = new MassSpring();
         frame.pack();
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setSize(new Dimension(800, 800));
         frame.setTitle("Mass Spring System");
         frame.setLocation(0, 0);
         frame.setVisible(true);

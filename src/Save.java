@@ -17,14 +17,14 @@ public class Save extends JPanel {
     }
 
     public void openExplorer() {
+        //creates a save dialog in the current directory
         JFrame parentWindow = (JFrame) SwingUtilities.getWindowAncestor(this);
-        System.setProperty("com.apple.macos.use-file-dialog-packages", "true");
         FileDialog fileChooser = new FileDialog(parentWindow, "Create File", FileDialog.SAVE);
         if (directoryString != null && directoryString != "") {
             fileChooser.setDirectory(directoryString);
         }
 
-
+        //Allows the user to select json files to overwrite
         FilenameFilter filter = (dir, name) -> name.endsWith(".json");
         fileChooser.setFilenameFilter(filter);
         fileChooser.setVisible(true);
@@ -48,6 +48,7 @@ public class Save extends JPanel {
         mapper.writeValue(directory, obj);
     }
 
+    //getExtension() and renameFile() make sure that the user an only save .json files so that they can be reselected with the load function.
     private String getExtension() {
         if(directory!=null) {
             String name = directory.getName();

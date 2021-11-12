@@ -16,17 +16,17 @@ import java.util.Stack;
 
 public class Pendulum extends JFrame {
     //declare pendulum object
-    public pendulumObj PO = new pendulumObj(5, 0, 0, 9.81, (Math.PI/4), (Math.PI/4), 0.015);
+    protected pendulumObj PO = new pendulumObj(5, 0, 0, 9.81, (Math.PI/4), (Math.PI/4), 0.015);
 
     //initialise stacks and other variables that are used with the undo and redo functions
-    public Stack<pendulumObj> undoStack = new Stack<>();
-    public Stack<pendulumObj> redoStack = new Stack<>();
+    protected Stack<pendulumObj> undoStack = new Stack<>();
+    protected Stack<pendulumObj> redoStack = new Stack<>();
     JButton undoB, redoB;
 
     //declare variables that are used for the sliders
     JSlider gravityS, lengthS, initAngleS;
     JLabel gravitySL, lengthSL, initAngleSL;
-    boolean variableChanged = false;
+    protected boolean variableChanged = false;
 
     //declare variables that are used for the menu bar
     JMenuBar menuBar;
@@ -34,11 +34,11 @@ public class Pendulum extends JFrame {
 
     //declare variables that are used in the extra input panel
     JButton extraButton;
-    public double lengthExtra;
-    public double velocityExtra = 0;
-    public double gravityExtra;
-    public double angleExtra;
-    public double dtExtra;
+    double lengthExtra;
+    double velocityExtra = 0;
+    double gravityExtra;
+    double angleExtra;
+    double dtExtra;
     boolean TFSaved = false;
 
     //variables that are used when the user clicks the screen
@@ -87,7 +87,7 @@ public class Pendulum extends JFrame {
 
         //create sliders and their labels
         gravityS = new JSlider(JSlider.HORIZONTAL,0,2000,981);
-        gravityS.setMajorTickSpacing(1000);
+        gravityS.setMajorTickSpacing(100);
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 0;
@@ -259,7 +259,7 @@ public class Pendulum extends JFrame {
             calculate();
         }
 
-        public void calculate(){
+        private void calculate(){
             int angleInt;
             double angleAccel;
 
@@ -741,7 +741,8 @@ public class Pendulum extends JFrame {
         public void actionPerformed(ActionEvent undoButtonPressed){
             if(!undoStack.empty()){
                 //adds current values to the redo stack
-                redoStack.push(new pendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
+                redoStack.push(new pendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(),
+                        PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
 
                 //gets the old values
                 pendulumObj POtemp = undoStack.pop();
@@ -779,9 +780,6 @@ public class Pendulum extends JFrame {
     public class redoButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent redoButtonPressed){
             if(!redoStack.empty()){
-                //pushes the old values to the redo stack and allows the redo button to be pressed
-                undoStack.push(new pendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
-
                 //gets values from the redo stack
                 pendulumObj POtemp = redoStack.pop();
 
@@ -802,6 +800,10 @@ public class Pendulum extends JFrame {
                 initAngleS.setValue(angleInt);
 
                 variableChanged = false;
+
+                //pushes the old values to the redo stack and allows the redo button to be pressed
+                undoStack.push(new pendulumObj(POtemp.getLength(), POtemp.getVelocity(), POtemp.getInitialVelocity(),
+                        POtemp.getGravity(), POtemp.getAngle(), POtemp.getInitialAngle(), POtemp.getDt()));
 
                 //enables undo button if it was disabled
                 if(!undoB.isEnabled()){

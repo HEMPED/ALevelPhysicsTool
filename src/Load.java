@@ -10,8 +10,9 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 public class Load extends Save {
+    //return value allows the program to know if a file is selected
     int returnValue = 0;
-    boolean fileChosen = false;
+    boolean fileChosen;
 
     public Load(){
         fileChosen = false;
@@ -20,6 +21,8 @@ public class Load extends Save {
     @Override
     public void openExplorer(){
         JFileChooser chooser = new JFileChooser(".");
+
+        //Makes it so the user can only select .json files
         FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON", "json");
         chooser.setFileFilter(filter);
 

@@ -2,9 +2,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.sql.Array;
 import java.util.*;
-import java.util.Timer;
 
 public class MassSpring extends JFrame {
     JPanel sliderPanel;
@@ -20,6 +18,7 @@ public class MassSpring extends JFrame {
         sliderPanel = new JPanel();
         sliderPanel.setLayout(new GridBagLayout());
         sliderPanel.setBackground(Color.white);
+        sliderPanel.setPreferredSize(new Dimension(300, 300));
 
         gravityS = new JSlider(JSlider.HORIZONTAL, 0, 2000, 981);
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -66,7 +65,8 @@ public class MassSpring extends JFrame {
         extensionSChanged ESC = new extensionSChanged();
         extensionS.addChangeListener(ESC);
 
-        c.fill = GridBagConstraints.HORIZONTAL;
+        c.fill = GridBagConstraints.VERTICAL;
+        c.weighty = 1;
         c.gridx = 1;
         c.gridy = 0;
         add(sliderPanel, c);
@@ -130,7 +130,7 @@ public class MassSpring extends JFrame {
         private void calculatePoints(int length){
             int pointX, pointY;
             int anchorX, anchorY;
-            int changeInLength = length / 30;
+            int changeInLength = length / 50;
 
             anchorX = 100;
             anchorY = 30;
@@ -140,7 +140,7 @@ public class MassSpring extends JFrame {
             points.add(new Point((anchorX + 50), (anchorY - 15)));
             points.add(new Point(anchorX, anchorY));
 
-            for(int x = 1; x < 30; x++){
+            for(int x = 1; x < 50; x++){
                 if(x % 2 == 0){
                     pointX = anchorX;
                 } else {
@@ -151,18 +151,16 @@ public class MassSpring extends JFrame {
 
                 points.add(new Point(pointX, pointY));
 
-                if(x == 29){
+                if(x == 49){
                     points.add(new Point((pointX - 50), (pointY + 15)));
                 }
             }
         }
 
-        private double calculateTimePeriod(){
+        private void calculateTimePeriod(){
             double timePeriod = 2 * Math.PI * Math.pow((MSO.getMass() / MSO.getSpringConstant()), 0.5);
             double angularVelocity = (2 * Math.PI) / timePeriod;
             MSO.setAngularVelocity(angularVelocity);
-
-            return timePeriod;
         }
 
         private void calculateDisplacement(){
@@ -171,21 +169,25 @@ public class MassSpring extends JFrame {
         }
 
         public void run() {
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
             long currentTime;
 
             while(true) {
-                currentTime = System.currentTimeMillis();
-                time = (double) (currentTime - startTime) / 1000;
+                if(MSO.getMass() != 0) {
+                    currentTime = System.nanoTime();
+                    time = (double) (currentTime - startTime) / 1000000000;
 
-                calculateTimePeriod();
-                calculateDisplacement();
+                    calculateTimePeriod();
+                    calculateDisplacement();
 
-                calculatePoints((int) ((MSO.getLength() + MSO.getDisplacement()) * 50));
+                    calculatePoints((int) ((MSO.getLength() + MSO.getDisplacement()) * 50));
+                }else{
+                    MSO.setDisplacement(0);
+                }
 
                 repaint();
                 try{
-                    Thread.sleep(5);
+                    Thread.sleep(1);
                 } catch (InterruptedException e) {
                 }
             }

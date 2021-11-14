@@ -114,6 +114,9 @@ public class MainMenu extends JFrame{
         pendulumBPressed PBP = new pendulumBPressed();
         pendulumB.addActionListener(PBP);
 
+        massSpringBPressed MSBP = new massSpringBPressed();
+        massSpringB.addActionListener(MSBP);
+
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 1;
@@ -172,6 +175,13 @@ public class MainMenu extends JFrame{
         public void actionPerformed(ActionEvent pendulumBPressed){
             Pendulum p = new Pendulum();
             p.main(null);
+        }
+    }
+
+    public class massSpringBPressed implements ActionListener{
+        public void actionPerformed(ActionEvent massSpringBPressed){
+            MassSpring ms = new MassSpring();
+            ms.main(null);
         }
     }
 

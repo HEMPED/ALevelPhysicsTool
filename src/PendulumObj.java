@@ -1,10 +1,10 @@
-public class pendulumObj{
+public class PendulumObj {
     //local variables of the pendulum object
     private double length, velocity, gravity, angle, dt, initialAngle, initialVelocity;
 
-    public pendulumObj(){}
+    public PendulumObj(){}
 
-    public pendulumObj(double len, double vel, double initVel, double grav, double ang, double initAng, double DT){
+    public PendulumObj(double len, double vel, double initVel, double grav, double ang, double initAng, double DT){
         length = len;
         velocity = vel;
         gravity = grav;

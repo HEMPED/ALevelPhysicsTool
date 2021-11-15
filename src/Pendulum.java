@@ -849,12 +849,8 @@ public class Pendulum extends JFrame {
             //sets the slider changed flag to false
             variableChanged = false;
 
-        } catch (StreamReadException e) {
-            e.printStackTrace();
-        } catch (DatabindException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. Check if you selected the correct file and retry.</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
         }
 
     }

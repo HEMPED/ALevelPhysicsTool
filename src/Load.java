@@ -30,7 +30,6 @@ public class Load extends Save {
 
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             directory = chooser.getSelectedFile();
-            System.out.println(directory.getAbsolutePath());
             fileChosen = true;
         }
     }

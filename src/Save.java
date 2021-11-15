@@ -70,7 +70,6 @@ public class Save extends JPanel {
             directoryString = directory.getName().substring(0,i);
         }
         directory = new File(directory.getParent(), directoryString + ".json");
-        System.out.println(directory);
     }
 
     public static File getDirectory(){

@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.util.*;
 
 public class MassSpring extends JFrame {
+    //time used to calculate displacement
+    double time;
+
     //declare variables that are used for the sliders
     JPanel sliderPanel;
     JSlider massS, gravityS, extensionS, springConstantS;
@@ -145,7 +148,6 @@ public class MassSpring extends JFrame {
 
     public class MassSpringPanel extends JPanel implements Runnable{
         ArrayList<Point> points = new ArrayList<>();
-        double time;
 
         public MassSpringPanel(){
             setLayout(new FlowLayout());
@@ -193,36 +195,54 @@ public class MassSpring extends JFrame {
             int pointX, pointY;
             int anchorX, anchorY;
             double changeInLength = length / 50;
+            double displacementRatio = MSO.getDisplacement() / MSO.getAmplitude();
+            displacementRatio = Math.abs(displacementRatio);
 
             anchorX = 100;
             anchorY = 30;
 
             points.clear();
 
-            points.add(new Point((anchorX + 50), (anchorY - 15)));
-            points.add(new Point(anchorX, anchorY));
 
             for(int x = 1; x < 50; x++){
-                if(Math.abs(MSO.getDisplacement()) / MSO.getAmplitude() < 0.8) {
+
+                if(MSO.getDisplacement() > 0) {
+                    anchorX = 100 + (int) (10 * displacementRatio);
+
                     if (x % 2 == 0) {
-                        pointX = anchorX + 20;
+                        pointX = anchorX;
                     } else {
-                        pointX = anchorX + 80;
+                        pointX = anchorX + 100 - (int) (20 * displacementRatio);
+                    }
+
+                    pointY = (int) (anchorY + changeInLength * x);
+
+                    if(x == 1){
+                        int tempX = pointX - (pointX - anchorX) / 2;
+                        points.add(new Point(tempX, (anchorY - 15)));
+                        points.add(new Point(anchorX, anchorY));
                     }
                 } else {
+                    anchorX = 100;
                     if (x % 2 == 0) {
                         pointX = anchorX;
                     } else {
                         pointX = anchorX + 100;
                     }
+
+                    pointY = (int) (anchorY + changeInLength * x);
+
+                    if(x == 1){
+                        int tempX = anchorX + 50;
+                        points.add(new Point(tempX, (anchorY - 15)));
+                        points.add(new Point(anchorX, anchorY));
+                    }
                 }
-
-                pointY = (int) (anchorY + changeInLength * x);
-
                 points.add(new Point(pointX, pointY));
 
                 if(x == 49){
-                    points.add(new Point((pointX - 50), (pointY + 15)));
+                    int tempX = pointX - (pointX - anchorX) / 2;
+                    points.add(new Point(tempX, (pointY + 15)));
                 }
             }
         }
@@ -338,13 +358,15 @@ public class MassSpring extends JFrame {
             //changes the simulation
             MSO.setSpringConstant(MSOTemp.getSpringConstant());
             MSO.setGravity(MSOTemp.getGravity());
-            MSO.setDisplacement(MSO.getDisplacement());
-            MSO.setLength(MSO.getLength());
-            MSO.setTimePeriod(MSO.getTimePeriod());
-            MSO.setAngularVelocity(MSO.getAngularVelocity());
-            MSO.setAcceleration(MSO.getAcceleration());
-            MSO.setMass(MSO.getMass());
-            MSO.setAmplitude(MSO.getAmplitude());
+            MSO.setDisplacement(MSOTemp.getAmplitude());
+            MSO.setLength(MSOTemp.getLength());
+            MSO.setTimePeriod(MSOTemp.getTimePeriod());
+            MSO.setAngularVelocity(MSOTemp.getAngularVelocity());
+            MSO.setAcceleration(MSOTemp.getAcceleration());
+            MSO.setMass(MSOTemp.getMass());
+            MSO.setAmplitude(MSOTemp.getAmplitude());
+
+            time = 0;
 
             //sets the values of the sliders
             massS.setValue((int) (MSO.getMass() * 100));
@@ -352,12 +374,8 @@ public class MassSpring extends JFrame {
             extensionS.setValue((int) (MSO.getAmplitude() * 100));
             springConstantS.setValue((int) (MSO.getSpringConstant()));
 
-        } catch (StreamReadException e) {
-            e.printStackTrace();
-        } catch (DatabindException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. Check if you selected the correct file and retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
         }
 
     }

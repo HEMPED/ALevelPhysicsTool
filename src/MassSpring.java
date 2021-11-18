@@ -211,6 +211,18 @@ public class MassSpring extends JFrame {
                     g1.fillRect((xVal - 20), yVal + 10, 40, 40);
                 }
             }
+
+            //overlay
+            int overlayAnchorX = getWidth() - 150;
+            int overlayAnchorY = 15;
+
+            g.setColor(Color.BLACK);
+
+            double displacement = Math.round(MSO.getDisplacement() * 100) / 100.0;
+            double time2 = time % MSO.getTimePeriod();
+            time2 = Math.round(time2 * 100) / 100.0;
+            g.drawString("Displacement: " + displacement + "cm",overlayAnchorX, overlayAnchorY);
+            g.drawString("Time: " + time2 + "s",overlayAnchorX, overlayAnchorY + 15);
         }
 
         //method used to split the spring into a series of points, calculated from its extended or compressed length
@@ -275,6 +287,7 @@ public class MassSpring extends JFrame {
         private void calculateTimePeriod() {
             double timePeriod = 2 * Math.PI * Math.pow((MSO.getMass() / MSO.getSpringConstant()), 0.5);
             double angularVelocity = (2 * Math.PI) / timePeriod;
+            MSO.setTimePeriod(timePeriod);
             MSO.setAngularVelocity(angularVelocity);
         }
 

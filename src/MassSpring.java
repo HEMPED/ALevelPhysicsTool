@@ -1,5 +1,3 @@
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.swing.*;
@@ -15,18 +13,20 @@ import java.util.*;
 public class MassSpring extends JFrame {
     //time used to calculate displacement
     double time;
+    long startTime;
+    boolean sliderChanged = false;
 
     //declare variables that are used for the sliders
     JPanel sliderPanel;
-    JSlider massS, gravityS, extensionS, springConstantS;
-    JLabel massSL, gravitySL, extensionSL, springConstantSL;
+    JSlider massS, extensionS, springConstantS;
+    JLabel massSL, extensionSL, springConstantSL;
 
     //declare variables that are used for the menu bar
     JMenuBar menuBar;
     JButton saveB, loadB;
 
     //object used to store the variables of the system
-    MassSpringObj MSO = new MassSpringObj(15,9.81, 3, 7, 2, 3);
+    MassSpringObj MSO = new MassSpringObj(20, 3, 7, 2, 3);
 
     //declare stacks and buttons for the undo and redo function
     protected Stack<MassSpringObj> undoStack = new Stack<>();
@@ -34,11 +34,12 @@ public class MassSpring extends JFrame {
     JButton undoB, redoB;
 
     public MassSpring(){
+        //sets the layout of the whole frame
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(3,3,3,3);
 
-        //menuBar
+        //menuBar used for save and load functions
         menuBar = new JMenuBar();
 
         saveB = new JButton("Save");
@@ -64,16 +65,11 @@ public class MassSpring extends JFrame {
 
         setJMenuBar(menuBar);
 
+        //creating the slider panel and all the sliders and corresponding labels
         sliderPanel = new JPanel();
         sliderPanel.setLayout(new GridBagLayout());
         sliderPanel.setBackground(Color.white);
-        sliderPanel.setPreferredSize(new Dimension(300, 300));
-
-        gravityS = new JSlider(JSlider.HORIZONTAL, 0, 2000, 981);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 0;
-        sliderPanel.add(gravityS, c);
+        sliderPanel.setPreferredSize(new Dimension(350, 300));
 
         massS = new JSlider(JSlider.HORIZONTAL, 0, 1000, 200);
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -93,12 +89,6 @@ public class MassSpring extends JFrame {
         c.gridy = 6;
         sliderPanel.add(springConstantS, c);
 
-        gravitySL = new JLabel("Gravity: 9.81N/kg");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 1;
-        sliderPanel.add(gravitySL, c);
-
         massSL = new JLabel("Mass: 2kg");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -117,9 +107,6 @@ public class MassSpring extends JFrame {
         c.gridy = 7;
         sliderPanel.add(springConstantSL, c);
 
-        gravitySChanged GSC = new gravitySChanged();
-        gravityS.addChangeListener(GSC);
-
         massSChanged MSC = new massSChanged();
         massS.addChangeListener(MSC);
 
@@ -129,8 +116,39 @@ public class MassSpring extends JFrame {
         springConstantSChanged SCSC = new springConstantSChanged();
         springConstantS.addChangeListener(SCSC);
 
+        //create the extra panel and all the buttons that go with it
+        JPanel extraPanel = new JPanel();
+        extraPanel.setLayout(new GridBagLayout());
+        extraPanel.setBackground(Color.white);
+
+        undoB = new JButton("Undo");
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 0;
+        extraPanel.add(undoB, c);
+
+        //sets up buttons used for the undo and redo functions
+        undoB.setEnabled(false);
+        undoButtonPressed UBP = new undoButtonPressed();
+        undoB.addActionListener(UBP);
+
+        redoB = new JButton("Redo");
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 0;
+        extraPanel.add(redoB, c);
+
+        redoB.setEnabled(false);
+        redoButtonPressed RBP = new redoButtonPressed();
+        redoB.addActionListener(RBP);
+
         c.fill = GridBagConstraints.VERTICAL;
-        c.weighty = 1;
+        c.gridx = 1;
+        c.gridy = 1;
+        add(extraPanel, c);
+
+        c.fill = GridBagConstraints.VERTICAL;
+        c.weighty = 0;
         c.gridx = 1;
         c.gridy = 0;
         add(sliderPanel, c);
@@ -146,34 +164,38 @@ public class MassSpring extends JFrame {
     }
 
 
-    public class MassSpringPanel extends JPanel implements Runnable{
+    public class MassSpringPanel extends JPanel implements Runnable {
+        //stores the "corners" of the spring once it has been turned into a 2d object
         ArrayList<Point> points = new ArrayList<>();
 
-        public MassSpringPanel(){
+        public MassSpringPanel() {
             setLayout(new FlowLayout());
             setPreferredSize(new Dimension(100000, 600));
         }
 
         @Override
-        public void paint(Graphics g){
-            Graphics2D g1 = (Graphics2D)g;
+        public void paint(Graphics g) {
+            //antialiasing used to smooth out the diagonal parts of the spring
+            Graphics2D g1 = (Graphics2D) g;
             RenderingHints rh = new RenderingHints(
                     RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             g1.setRenderingHints(rh);
 
+            //draws the background
             g1.setColor(Color.white);
-            g1.fillRect(0,0,getWidth(),getHeight());
+            g1.fillRect(0, 0, getWidth(), getHeight());
 
             g1.setColor(Color.black);
 
-            for(int x = 0; x < points.size(); x++){
+            //connects each point
+            for (int x = 0; x < points.size(); x++) {
                 Point p = points.get(x);
 
                 int xVal = (int) p.getX();
                 int yVal = (int) p.getY();
 
-                if(x != 0) {
+                if (x != 0) {
                     Point prevPoint = points.get(x - 1);
 
                     int prevXVal = (int) prevPoint.getX();
@@ -182,31 +204,33 @@ public class MassSpring extends JFrame {
                     g1.drawLine(prevXVal, prevYVal, xVal, yVal);
                 }
 
-                if(x == points.size() - 1){
+                //draws the mass hanging off the spring
+                if (x == points.size() - 1) {
                     g1.drawLine(xVal, yVal, xVal, yVal + 10);
                     g1.setColor(Color.red);
                     g1.fillRect((xVal - 20), yVal + 10, 40, 40);
                 }
             }
-
         }
 
-        private void calculatePoints(double length){
+        //method used to split the spring into a series of points, calculated from its extended or compressed length
+        //method also calculates how the spring squeezes.
+        private void calculatePoints(double length) {
             int pointX, pointY;
             int anchorX, anchorY;
             double changeInLength = length / 50;
+            //used for the compression factor as the spring stretches.
             double displacementRatio = MSO.getDisplacement() / MSO.getAmplitude();
             displacementRatio = Math.abs(displacementRatio);
 
-            anchorX = 100;
             anchorY = 30;
 
             points.clear();
 
 
-            for(int x = 1; x < 50; x++){
+            for (int x = 1; x < 50; x++) {
 
-                if(MSO.getDisplacement() > 0) {
+                if (MSO.getDisplacement() > 0) {
                     anchorX = 100 + (int) (10 * displacementRatio);
 
                     if (x % 2 == 0) {
@@ -217,7 +241,7 @@ public class MassSpring extends JFrame {
 
                     pointY = (int) (anchorY + changeInLength * x);
 
-                    if(x == 1){
+                    if (x == 1) {
                         int tempX = pointX - (pointX - anchorX) / 2;
                         points.add(new Point(tempX, (anchorY - 15)));
                         points.add(new Point(anchorX, anchorY));
@@ -232,7 +256,7 @@ public class MassSpring extends JFrame {
 
                     pointY = (int) (anchorY + changeInLength * x);
 
-                    if(x == 1){
+                    if (x == 1) {
                         int tempX = anchorX + 50;
                         points.add(new Point(tempX, (anchorY - 15)));
                         points.add(new Point(anchorX, anchorY));
@@ -240,30 +264,47 @@ public class MassSpring extends JFrame {
                 }
                 points.add(new Point(pointX, pointY));
 
-                if(x == 49){
+                if (x == 49) {
                     int tempX = pointX - (pointX - anchorX) / 2;
                     points.add(new Point(tempX, (pointY + 15)));
                 }
             }
         }
 
-        private void calculateTimePeriod(){
+        //time period determines the frequency of the spring
+        private void calculateTimePeriod() {
             double timePeriod = 2 * Math.PI * Math.pow((MSO.getMass() / MSO.getSpringConstant()), 0.5);
             double angularVelocity = (2 * Math.PI) / timePeriod;
             MSO.setAngularVelocity(angularVelocity);
         }
 
-        private void calculateDisplacement(){
+        //uses the cos() function and the time period to calculate where the spring is in its cycle.
+        private void calculateDisplacement() {
             double displacement = MSO.getAmplitude() * Math.cos(MSO.getAngularVelocity() * time);
             MSO.setDisplacement(displacement);
         }
 
         public void run() {
-            long startTime = System.nanoTime();
+            startTime = System.nanoTime();
             long currentTime;
 
-            while(true) {
-                if(MSO.getMass() != 0) {
+            while (true) {
+                //changes the simulation and pushes previous values to the undo stack if the sliders have been moved
+                if (sliderChanged) {
+                    undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+                    double newMass = massS.getValue() / 100.0;
+                    double newExtension = extensionS.getValue() / 100.0;
+                    MSO.setMass(newMass);
+                    MSO.setDisplacement(newExtension);
+                    MSO.setAmplitude(newExtension);
+                    MSO.setSpringConstant(springConstantS.getValue());
+                    undoB.setEnabled(true);
+                    sliderChanged = false;
+                }
+
+                //only calculates motion if the mass isn't 0  to avoid errors
+                if (MSO.getMass() != 0) {
+                    //nanoTime used as it is more precise than getMillis()
                     currentTime = System.nanoTime();
                     time = (double) (currentTime - startTime) / 1000000000;
 
@@ -272,74 +313,65 @@ public class MassSpring extends JFrame {
 
                     calculatePoints((int) ((MSO.getLength() + MSO.getDisplacement()) * 50));
 
-                }else{
+                } else {
+                    //spring remains at its original length if no mass is attached
                     MSO.setDisplacement(0);
+                    MSO.setAmplitude(0);
                 }
 
                 repaint();
-                try{
-                    Thread.sleep(1);
+                try {
+                    Thread.sleep(15);
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
     }
 
-    public class gravitySChanged implements ChangeListener{
-
-        public void stateChanged(ChangeEvent e) {
-            double newGravity = (double) gravityS.getValue() / 100;
-            gravitySL.setText("Gravity: " + newGravity + "N/kg");
-
-            MSO.setGravity(newGravity);
-        }
-    }
-
+    //Change listeners for sliders change the value of their corresponding label and
+    //the sliderChanged boolean to true so the simulation can be updated in the while loop
     public class massSChanged implements ChangeListener{
-
-        public void stateChanged(ChangeEvent e) {
+        public void stateChanged(ChangeEvent massSChanged) {
             double newMass = (double) massS.getValue() / 100;
             massSL.setText("Mass: " + newMass + "kg");
 
-            MSO.setMass(newMass);
+            sliderChanged = true;
         }
     }
 
     public class extensionSChanged implements ChangeListener{
-
-        public void stateChanged(ChangeEvent e) {
+        public void stateChanged(ChangeEvent extensionSChanged) {
             double newExtension = (double) extensionS.getValue() / 100;
             extensionSL.setText("Extension: " + newExtension + "cm");
 
-            MSO.setAmplitude(newExtension);
-            MSO.setDisplacement(newExtension);
+            sliderChanged = true;
         }
     }
 
     public class springConstantSChanged implements ChangeListener{
-
-        public void stateChanged(ChangeEvent e) {
+        public void stateChanged(ChangeEvent springConstantSChanged) {
             double newSpringConstant = springConstantS.getValue();
-            String newLabelString = "<HTML>Spring Constant:<br>" +newSpringConstant+ "</br>N/kg</html>";
+            String newLabelString = "<HTML>Spring Constant:<br>" + newSpringConstant + "</br>N/kg</html>";
             springConstantSL.setText(newLabelString);
 
-            MSO.setSpringConstant(newSpringConstant);
+            sliderChanged = true;
         }
     }
 
+    //allows the user to load a stored simulation with a .json file
     public class loadButtonPressed implements ActionListener{
-
         public void actionPerformed(ActionEvent e) {
             Load load = new Load();
             load.openExplorer();
-            if(load.getFileChosen() == true) {
+            if(load.getFileChosen()) {
                 read(load.getDirectory());
             }
         }
     }
 
+    //allows the user to store their simulation as a .json file
     public class saveButtonPressed implements ActionListener{
-
         public void actionPerformed(ActionEvent e) {
             Save save = new Save();
             save.openExplorer();
@@ -347,7 +379,83 @@ public class MassSpring extends JFrame {
         }
     }
 
-    //Method to read values from file
+    //action listeners for the undo and redo buttons
+    public class undoButtonPressed implements ActionListener{
+        public void actionPerformed(ActionEvent undoButtonPressed){
+            if(!undoStack.empty()){
+                //adds current values to the redo stack
+                redoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+
+                //gets the old values
+                MassSpringObj MSOtemp = undoStack.pop();
+                if(!undoStack.empty()) {
+                    MSOtemp = undoStack.pop();
+                }
+                //resets variables in the pendulum object to their old values
+                MSO.setSpringConstant(MSOtemp.getSpringConstant());
+                MSO.setAngularVelocity(MSOtemp.getAngularVelocity());
+                MSO.setDisplacement(MSOtemp.getAmplitude());
+                MSO.setLength(MSOtemp.getLength());
+                MSO.setTimePeriod(MSOtemp.getTimePeriod());
+                MSO.setAmplitude(MSOtemp.getAmplitude());
+                MSO.setMass(MSOtemp.getMass());
+
+                startTime = System.nanoTime();
+
+                //resets sliders to their old values
+                massS.setValue((int) (MSO.getMass() * 100));
+                extensionS.setValue((int) (MSO.getAmplitude() * 100));
+                springConstantS.setValue((int) (MSO.getSpringConstant()));
+                sliderChanged = false;
+
+                //disables the button if that was the last value in the stack
+                if(undoStack.empty()){
+                    undoB.setEnabled(false);
+                }
+
+                //enables the redo button
+                redoB.setEnabled(true);
+            }
+        }
+    }
+
+    public class redoButtonPressed implements ActionListener{
+        public void actionPerformed(ActionEvent redoButtonPressed){
+            if(!redoStack.empty()){
+                //adds current values to the undo stack
+                undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+
+                //gets the old values
+                MassSpringObj MSOtemp = redoStack.pop();
+                //resets variables in the pendulum object to their old values
+                MSO.setSpringConstant(MSOtemp.getSpringConstant());
+                MSO.setAngularVelocity(MSOtemp.getAngularVelocity());
+                MSO.setDisplacement(MSOtemp.getAmplitude());
+                MSO.setLength(MSOtemp.getLength());
+                MSO.setTimePeriod(MSOtemp.getTimePeriod());
+                MSO.setAmplitude(MSOtemp.getAmplitude());
+                MSO.setMass(MSOtemp.getMass());
+
+                startTime = System.nanoTime();
+
+                //resets sliders to their old values
+                massS.setValue((int) (MSO.getMass() * 100));
+                extensionS.setValue((int) (MSO.getAmplitude() * 100));
+                springConstantS.setValue((int) (MSO.getSpringConstant()));
+                sliderChanged = false;
+
+                //disables the button if that was the last value in the stack
+                if(redoStack.empty()){
+                    redoB.setEnabled(false);
+                }
+
+                //enables the undo button
+                undoB.setEnabled(true);
+            }
+        }
+    }
+
+    //Method to retrieve values from the .json file
     public void read(File directory){
         try{
             ObjectMapper mapper = new ObjectMapper();
@@ -357,30 +465,31 @@ public class MassSpring extends JFrame {
 
             //changes the simulation
             MSO.setSpringConstant(MSOTemp.getSpringConstant());
-            MSO.setGravity(MSOTemp.getGravity());
             MSO.setDisplacement(MSOTemp.getAmplitude());
             MSO.setLength(MSOTemp.getLength());
             MSO.setTimePeriod(MSOTemp.getTimePeriod());
             MSO.setAngularVelocity(MSOTemp.getAngularVelocity());
-            MSO.setAcceleration(MSOTemp.getAcceleration());
             MSO.setMass(MSOTemp.getMass());
             MSO.setAmplitude(MSOTemp.getAmplitude());
 
-            time = 0;
+            startTime = System.nanoTime();
+            undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
 
             //sets the values of the sliders
+            sliderChanged = false;
             massS.setValue((int) (MSO.getMass() * 100));
-            gravityS.setValue((int) (MSO.getGravity() * 100));
             extensionS.setValue((int) (MSO.getAmplitude() * 100));
             springConstantS.setValue((int) (MSO.getSpringConstant()));
+            sliderChanged = true;
 
         } catch (IOException e) {
+            //lets the user know if there was an error
             JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. Check if you selected the correct file and retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
         }
 
     }
 
-
+    //sets up the window
     public static void main(String[] args){
         MassSpring frame = new MassSpring();
         frame.getContentPane().setBackground(Color.white);

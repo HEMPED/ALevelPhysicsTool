@@ -1,14 +1,12 @@
 public class MassSpringObj {
-    private double springConstant, gravity, displacement, length, timePeriod,
-            angularVelocity, acceleration, mass, amplitude;
+    private double springConstant, displacement, length, timePeriod, mass, amplitude, angularVelocity;
 
     public MassSpringObj() {
 
     }
 
-    public MassSpringObj(double springConstant, double gravity, double displacement, double length, double mass, double amplitude) {
+    public MassSpringObj(double springConstant, double displacement, double length, double mass, double amplitude) {
         this.springConstant = springConstant;
-        this.gravity = gravity;
         this.displacement = displacement;
         this.length = length;
         this.mass = mass;
@@ -20,8 +18,8 @@ public class MassSpringObj {
         return springConstant;
     }
 
-    public double getGravity() {
-        return gravity;
+    public double getAngularVelocity() {
+        return angularVelocity;
     }
 
     public double getDisplacement() {
@@ -34,14 +32,6 @@ public class MassSpringObj {
 
     public double getTimePeriod() {
         return timePeriod;
-    }
-
-    public double getAngularVelocity() {
-        return angularVelocity;
-    }
-
-    public double getAcceleration() {
-        return acceleration;
     }
 
     public double getMass() {
@@ -57,8 +47,8 @@ public class MassSpringObj {
         this.springConstant = springConstant;
     }
 
-    public void setGravity(double gravity) {
-        this.gravity = gravity;
+    public void setAngularVelocity(double angularVelocity) {
+        this.angularVelocity = angularVelocity;
     }
 
     public void setDisplacement(double displacement) {
@@ -71,14 +61,6 @@ public class MassSpringObj {
 
     public void setTimePeriod(double timePeriod) {
         this.timePeriod = timePeriod;
-    }
-
-    public void setAngularVelocity(double angularVelocity) {
-        this.angularVelocity = angularVelocity;
-    }
-
-    public void setAcceleration(double acceleration) {
-        this.acceleration = acceleration;
     }
 
     public void setMass(double mass) {

@@ -1,5 +1,3 @@
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.swing.*;
@@ -535,9 +533,7 @@ public class Pendulum extends JFrame {
                     if(errors.getText().equals("")) {
                         gravityT = (double) gravityS.getValue() / 100;
                         errors.setText("NUMBERS ONLY");
-                    }else if(errors.getText().contains("NUMBERS ONLY")){
-
-                    }else{
+                    }else if(!errors.getText().contains("NUMBERS ONLY")){
                         errors.setText(errors.getText() + ", NUMBERS ONLY");
                     }
                 }
@@ -571,9 +567,7 @@ public class Pendulum extends JFrame {
 
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
-                    }else if(errors.getText().contains("NUMBERS ONLY")){
-
-                    }else{
+                    }else if(!errors.getText().contains("NUMBERS ONLY")){
                         errors.setText(errors.getText() + ", NUMBERS ONLY");
                     }
                 }
@@ -604,9 +598,7 @@ public class Pendulum extends JFrame {
                     initAngleT = initAngleS.getValue();
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
-                    }else if(errors.getText().contains("NUMBERS ONLY")){
-                    }else{
-
+                    }else if(!errors.getText().contains("NUMBERS ONLY")){
                         errors.setText(errors.getText() + ", NUMBERS ONLY");
                     }
                 }
@@ -639,8 +631,7 @@ public class Pendulum extends JFrame {
                     dtT = PO.getDt();
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
-                    }else if(errors.getText().contains("NUMBERS ONLY")){
-                    }else{
+                    }else if(!errors.getText().contains("NUMBERS ONLY")){
                         errors.setText(errors.getText() + ", NUMBERS ONLY");
                     }
                 }
@@ -664,8 +655,7 @@ public class Pendulum extends JFrame {
                     initVelocityT = 0;
                     if(errors.getText().equals("")) {
                         errors.setText("NUMBERS ONLY");
-                    }else if(errors.getText().contains("NUMBERS ONLY")){
-                    }else{
+                    }else if(!errors.getText().contains("NUMBERS ONLY")){
                         errors.setText(errors.getText() + ", NUMBERS ONLY");
                     }
                 }
@@ -722,7 +712,7 @@ public class Pendulum extends JFrame {
         public void actionPerformed(ActionEvent loadButtonPressed){
             Load load = new Load();
             load.openExplorer();
-            if(load.getFileChosen() == true) {
+            if(load.getFileChosen()) {
                 read(load.getDirectory());
             }
         }

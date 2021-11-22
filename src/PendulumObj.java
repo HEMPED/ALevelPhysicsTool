@@ -1,26 +1,19 @@
 public class PendulumObj {
     //local variables of the pendulum object
-    private double length, velocity, gravity, angle, dt, initialAngle, initialVelocity;
+    private double length, gravity, angle, initialAngle, timePeriod, angularVelocity;
 
     public PendulumObj(){}
 
-    public PendulumObj(double len, double vel, double initVel, double grav, double ang, double initAng, double DT){
+    public PendulumObj(double len, double grav, double ang, double initAng){
         length = len;
-        velocity = vel;
         gravity = grav;
         angle = ang;
-        dt = DT;
         initialAngle = initAng;
-        initialVelocity = initVel;
     }
 
     //getter methods for the pendulum object
     public double getLength(){
         return length;
-    }
-
-    public double getVelocity(){
-        return velocity;
     }
 
     public double getGravity(){
@@ -31,23 +24,19 @@ public class PendulumObj {
         return angle;
     }
 
-    public double getDt(){
-        return dt;
-    }
-
-    public double getInitialVelocity(){
-        return initialVelocity;
-    }
-
     public double getInitialAngle(){return initialAngle;}
+
+    public double getTimePeriod() {
+        return timePeriod;
+    }
+
+    public double getAngularVelocity() {
+        return angularVelocity;
+    }
 
     //setter methods for the pendulum object
     public void setLength(double len){
         length = len;
-    }
-
-    public void setVelocity(double vel){
-        velocity = vel;
     }
 
     public void setGravity(double grav){
@@ -58,14 +47,15 @@ public class PendulumObj {
         angle = ang;
     }
 
-    public void setDt(double DT){
-        dt = DT;
+    public void setInitialAngle(double ang){
+        initialAngle = ang;
     }
 
-    public void setInitialAngle(double ang){
-        initialAngle = ang;}
+    public void setTimePeriod(double timePeriod) {
+        this.timePeriod = timePeriod;
+    }
 
-    public void setInitialVelocity(double velocity){
-        initialVelocity = velocity;
+    public void setAngularVelocity(double angularVelocity) {
+        this.angularVelocity = angularVelocity;
     }
 }

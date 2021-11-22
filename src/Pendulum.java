@@ -14,17 +14,17 @@ import java.util.Stack;
 
 public class Pendulum extends JFrame {
     //declare pendulum object
-    protected PendulumObj PO = new PendulumObj(5, 0, 0, 9.81, (Math.PI/4), (Math.PI/4), 0.015);
+    PendulumObj PO;
 
     //initialise stacks and other variables that are used with the undo and redo functions
-    protected Stack<PendulumObj> undoStack = new Stack<>();
-    protected Stack<PendulumObj> redoStack = new Stack<>();
+    Stack<PendulumObj> undoStack = new Stack<>();
+    Stack<PendulumObj> redoStack = new Stack<>();
     JButton undoB, redoB;
 
     //declare variables that are used for the sliders
     JSlider gravityS, lengthS, initAngleS;
     JLabel gravitySL, lengthSL, initAngleSL;
-    protected boolean variableChanged = false;
+    boolean sliderChanged = false;
 
     //declare variables that are used for the menu bar
     JMenuBar menuBar;
@@ -32,17 +32,23 @@ public class Pendulum extends JFrame {
 
     //declare variables that are used in the extra input panel
     JButton extraButton;
-    double lengthExtra;
-    double velocityExtra = 0;
-    double gravityExtra;
-    double angleExtra;
-    double dtExtra;
+    double lengthTF;
+    double velocityTF = 0;
+    double gravityTF;
+    double angleTF;
     boolean TFSaved = false;
 
     //variables that are used when the user clicks the screen
     boolean clicked = false;
 
+    //variables used with timing the simulation
+    long start, end;
+    double diff;
+
     public Pendulum(){
+        //assigns values to the pendulum object
+        PO = new PendulumObj(5, 9.81, (Math.PI/4), (Math.PI/4));
+
         //set layout for the whole frame and individual panels
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -193,9 +199,6 @@ public class Pendulum extends JFrame {
 
         //initialise integers that are used to draw the pendulum
         int pendulumX, pendulumY, pointX, pointY;
-        //initialise variables that are used for the stopwatch
-        long start, end;
-
         public PendulumPanel(){
             //super(true);
             setLayout(new FlowLayout());
@@ -225,30 +228,22 @@ public class Pendulum extends JFrame {
             g1.setColor(Color.black);
 
             int currentAngle = (int) (PO.getAngle() * (180/Math.PI));
-            double currentVelocity = (double) (Math.round(PO.getVelocity() * 100)) / 100;
-            double currentAngularVelocity = (double) Math.round((PO.getVelocity() / PO.getLength()) * 100) / 100;
+            double time2 = diff % PO.getTimePeriod();
+            time2 = Math.round(time2 * 100) / 100.0;
 
-
-            g1.drawString("Current Angle: " + currentAngle + " degrees", 3, 13);
-            g1.drawString("Current Velocity: " + currentVelocity + " m/s", 3, 28);
-            g1.drawString("Current Angular Velocity: " + currentAngularVelocity + " rad/s", 3, 43);
-
+            g1.drawString("Current Angle: " + currentAngle + " degrees", 5, 15);
+            g1.drawString("Time:" + time2 + " s", 5, 30);
             //calculates the points of the pendulum and fixed point
-            pointX = getWidth()/2;
-            pointY = getHeight()/10;
-            pendulumX = pointX + (int) (Math.sin(PO.getAngle()) * PO.getLength()*100);
-            pendulumY = pointY + (int) (Math.cos(PO.getAngle()) * PO.getLength()*100);
+            calculatePoints();
 
             //draws fixed point
             g1.setColor(Color.BLACK);
             g1.drawLine(pointX, pointY, pendulumX, pendulumY);
-            g1.fillRoundRect(pointX - 5, pointY - 5,
-                    10, 10, 10, 10);
+            g1.fillRoundRect(pointX - 2, pointY - 2, 4, 4, 4, 4);
 
             //draws pendulum bob
             g1.setColor(Color.RED);
-            g1.fillRoundRect(pendulumX - 10, pendulumY - 10,
-                    20, 20, 20, 20);
+            g1.fillRoundRect(pendulumX - 10, pendulumY - 10, 20, 20, 20, 20);
 
 
         }
@@ -258,90 +253,83 @@ public class Pendulum extends JFrame {
             PO.setGravity((double) gravityS.getValue() / 100);
             PO.setLength((double) lengthS.getValue() / 1000);
 
-            start = System.currentTimeMillis();
+            start = System.nanoTime();
             calculate();
         }
 
         private void calculate(){
-            int angleInt;
-            double angleAccel;
-
             while(true) {
-                //saves old variables to undo stack if a variable is changed
-                if(variableChanged | TFSaved | clicked){
-                    undoStack.push(new PendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
-                    //allows the undo button to be clicked
-                    undoB.setEnabled(true);
-                }
-
-                //checks if the sliders have been moved
-                if (variableChanged) {
-                    PO.setGravity((double) gravityS.getValue() / 100);
-                    PO.setLength((double) lengthS.getValue() / 1000);
-                    PO.setInitialAngle(initAngleS.getValue() * (Math.PI/180));
-                    PO.setAngle(PO.getInitialAngle());
-                    PO.setVelocity(0);
-                    variableChanged = false;
-                }
-                //checks if the user has inputted data values to the text fields in the extra panel
-                if (TFSaved) {
-                    PO.setLength((int) lengthExtra);
-                    PO.setGravity(gravityExtra);
-                    PO.setInitialAngle(angleExtra);
-                    PO.setAngle(PO.getInitialAngle());
-                    PO.setDt(dtExtra);
-                    PO.setInitialVelocity(velocityExtra);
-                    TFSaved = false;
-
-                    //sets the values of the sliders to the specified values
-                    gravityS.setValue((int)(PO.getGravity() * 100));
-
-                    angleInt = (int) (PO.getAngle() * (180 / Math.PI));
-                    initAngleS.setValue(angleInt);
-
-                    lengthS.setValue((int) (PO.getLength() * 1000));
-
-                    //sets the slider changed flag to false
-                    variableChanged = false;
-                }
-
-                if(clicked){
-                    clicked = false;
-                    variableChanged = false;
-                }
-
-                //recalculates the velocity and angle of the pendulum and redraws the image
-                angleAccel = Math.sin(PO.getAngle()) * -1 * PO.getGravity();
-                //makes sure the program is not assuming that the velocity is not constantly increasing when the angle is 180 degrees
-                if(PO.getAngle() == -Math.PI || PO.getAngle() == Math.PI){
-                    PO.setVelocity(0);
-                }
-                PO.setVelocity(PO.getVelocity() + angleAccel* 0.015);
-                PO.setAngle(PO.getAngle() + PO.getVelocity() * 0.015);
-                if(PO.getAngle() == -Math.PI || PO.getAngle() == Math.PI){
-                    PO.setVelocity(0);
-                }
-
-                //calculates the displacement of the pendulum (for the graph)
-                double equilibriumX = pointX;
-                double equilibriumY = pointY + PO.getLength();
-                double displacement = Math.pow((equilibriumX - pendulumX), 2) + Math.pow((equilibriumY - pendulumY), 2);
-                displacement = Math.pow(displacement, 0.5);
-                displacement = displacement / (double) 100;
-
-                if(PO.getAngle() < 0){
-                    displacement = displacement * -1;
-                }
-
+                end = System.nanoTime();
+                diff = (end - start) / 1000000000.0;
+                //checks if any values have been changed
+                checkValues();
+                //calculates the current position of the pendulum
+                calculateDisplacement();
                 //redraws the image
                 repaint();
-
-                //waits a certain amount of time that can be specified by the user
                 try {
-                    Thread.sleep((long) (PO.getDt() * 2300));
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+
+        private void calculateDisplacement(){
+            double timePeriod = 2 * Math.PI * Math.pow((PO.getLength() / PO.getGravity()), 0.5);
+            PO.setTimePeriod(timePeriod);
+            double angularVelocity = Math.pow((PO.getGravity() / PO.getLength()), 0.5);
+            PO.setAngularVelocity(angularVelocity);
+            double displacementAng = PO.getInitialAngle() * Math.cos(angularVelocity * diff);
+            PO.setAngle(displacementAng);
+        }
+
+        private void calculatePoints(){
+            pointX = getWidth()/2;
+            pointY = getHeight()/10;
+            pendulumX = pointX + (int) (Math.sin(PO.getAngle()) * PO.getLength()*100);
+            pendulumY = pointY + (int) (Math.cos(PO.getAngle()) * PO.getLength()*100);
+        }
+
+        private void checkValues(){
+            //saves old values if a variable is changed
+            if(sliderChanged | TFSaved | clicked){
+                undoStack.push(new PendulumObj(PO.getLength(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle()));
+                start = System.nanoTime();
+                //allows the undo button to be clicked
+                undoB.setEnabled(true);
+            }
+            //checks if the sliders have been moved
+            if (sliderChanged) {
+                PO.setGravity((double) gravityS.getValue() / 100);
+                PO.setLength((double) lengthS.getValue() / 1000);
+                PO.setInitialAngle(initAngleS.getValue() * (Math.PI/180));
+                PO.setAngle(PO.getInitialAngle());
+                sliderChanged = false;
+            }
+            //checks if the user has inputted data values to the text fields in the extra panel
+            if (TFSaved) {
+                PO.setLength((int) lengthTF);
+                PO.setGravity(gravityTF);
+                PO.setInitialAngle(angleTF);
+                PO.setAngle(PO.getInitialAngle());
+                TFSaved = false;
+
+                //sets the values of the sliders to the specified values
+                gravityS.setValue((int)(PO.getGravity() * 100));
+
+                int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
+                initAngleS.setValue(angleInt);
+
+                lengthS.setValue((int) (PO.getLength() * 1000));
+
+                //sets the slider changed flag to false
+                sliderChanged = false;
+            }
+
+            if(clicked){
+                clicked = false;
+                sliderChanged = false;
             }
         }
 
@@ -387,9 +375,9 @@ public class Pendulum extends JFrame {
     public class extraInputPanel extends JPanel{
         //text fields and labels that display the current value with its unit and allows the user to input data
         //text area used to display errors with the data that the user has inputted
-        JTextField gravityTF, lengthTF, initAngleTF, dtTF, initVelocityTF;
-        JLabel gravityL, lengthL, initAngleL, dtL, initVelocityL;
-        JLabel gravityUnit, lengthUnit, initAngleUnit, dtUnit, initVelocityUnit;
+        JTextField gravityTF, lengthTF, initAngleTF;
+        JLabel gravityL, lengthL, initAngleL;
+        JLabel gravityUnit, lengthUnit, initAngleUnit;
         JTextArea errors;
         JButton saveChanges;
 
@@ -458,42 +446,6 @@ public class Pendulum extends JFrame {
             c.gridy = 2;
             add(initAngleUnit, c);
 
-            dtL = new JLabel("Time per tick: ");
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridx = 0;
-            c.gridy = 3;
-            add(dtL, c);
-
-            dtTF = new JTextField("" + PO.getDt());
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridx = 1;
-            c.gridy = 3;
-            add(dtTF, c);
-
-            dtUnit = new JLabel("seconds");
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridx = 2;
-            c.gridy = 3;
-            add(dtUnit, c);
-
-            initVelocityL = new JLabel("Initial Velocity");
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridx = 0;
-            c.gridy = 4;
-            add(initVelocityL, c);
-
-            initVelocityTF = new JTextField("0");
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridx = 1;
-            c.gridy = 4;
-            add(initVelocityTF, c);
-
-            initVelocityUnit = new JLabel("m/s");
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridx = 2;
-            c.gridy = 4;
-            add(initVelocityUnit, c);
-
             saveChanges = new JButton("Save Changes");
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 0;
@@ -519,7 +471,7 @@ public class Pendulum extends JFrame {
         public class saveChangesPressed implements ActionListener{
             //initialise values that are used within the class. ""T is used to store a temporary variable that is being validated
             boolean isValidated = true;
-            double lengthT = 5, gravityT = 9.81, initAngleT = 45, dtT = 0.1, initVelocityT = 0;
+            double lengthT = 5, gravityT = 9.81, initAngleT = 45, initVelocityT = 0;
 
             public void actionPerformed(ActionEvent saveChangesPressed){
                 //re-validates data every time the saveChanges button is pressed
@@ -621,51 +573,10 @@ public class Pendulum extends JFrame {
                     }
                 }
 
-
-
-                //makes sure the dt is a number an positive.
-                try {
-                    dtT = Double.parseDouble(dtTF.getText());
-                } catch (NumberFormatException NFE){
-                    isValidated = false;
-                    dtT = PO.getDt();
-                    if(errors.getText().equals("")) {
-                        errors.setText("NUMBERS ONLY");
-                    }else if(!errors.getText().contains("NUMBERS ONLY")){
-                        errors.setText(errors.getText() + ", NUMBERS ONLY");
-                    }
-                }
-
-                if(dtT < 0){
-                    isValidated = false;
-                    dtT = PO.getAngle();
-                    if(errors.getText().equals("")){
-                        errors.setText("DT CANNOT BE LESS THAN 0");
-                        dtT = 0.1;
-                    } else {
-                        errors.setText(errors.getText() + ", DT CANNOT BE LESS THAN 0");
-                    }
-                }
-
-                //makes sure the initial velocity specified is a number
-                try {
-                    initVelocityT = Double.parseDouble(initVelocityTF.getText());
-                }catch(NumberFormatException NFE){
-                    isValidated = false;
-                    initVelocityT = 0;
-                    if(errors.getText().equals("")) {
-                        errors.setText("NUMBERS ONLY");
-                    }else if(!errors.getText().contains("NUMBERS ONLY")){
-                        errors.setText(errors.getText() + ", NUMBERS ONLY");
-                    }
-                }
-
                 //stores the validated temporary variables to the public ""Extra variables.
-                lengthExtra = lengthT;
-                gravityExtra = gravityT;
-                angleExtra = initAngleT * (Math.PI / 180);
-                dtExtra = dtT;
-                velocityExtra = initVelocityT;
+                Pendulum.this.lengthTF = lengthT;
+                Pendulum.this.gravityTF = gravityT;
+                angleTF = initAngleT * (Math.PI / 180);
 
                 if(isValidated) {
                     TFSaved = true;
@@ -679,7 +590,7 @@ public class Pendulum extends JFrame {
         public void stateChanged(ChangeEvent e){
             double newGravity = (double) gravityS.getValue() / 100;
             gravitySL.setText("Gravity: " + newGravity + " N/kg");
-            variableChanged = true;
+            sliderChanged = true;
         }
     }
 
@@ -687,7 +598,7 @@ public class Pendulum extends JFrame {
         public void stateChanged(ChangeEvent e){
             double newLength = (double) lengthS.getValue() / 1000;
             lengthSL.setText("Length: " + newLength + " m");
-            variableChanged = true;
+            sliderChanged = true;
         }
     }
 
@@ -695,7 +606,7 @@ public class Pendulum extends JFrame {
         public void stateChanged(ChangeEvent e){
             int newInitAngle = initAngleS.getValue();
             initAngleSL.setText("Angle: " + newInitAngle + " degrees");
-            variableChanged = true;
+            sliderChanged = true;
         }
     }
 
@@ -736,19 +647,16 @@ public class Pendulum extends JFrame {
         public void actionPerformed(ActionEvent undoButtonPressed){
             if(!undoStack.empty()){
                 //adds current values to the redo stack
-                redoStack.push(new PendulumObj(PO.getLength(), PO.getVelocity(), PO.getInitialVelocity(), PO.getGravity(),
-                        PO.getAngle(), PO.getInitialAngle(), PO.getDt()));
+                redoStack.push(new PendulumObj(PO.getLength(), PO.getGravity(),
+                        PO.getAngle(), PO.getInitialAngle()));
 
                 //gets the old values
                 PendulumObj POtemp = undoStack.pop();
                 //resets variables in the pendulum object to their old values
-                PO.setVelocity(POtemp.getInitialVelocity());
-                PO.setVelocity(POtemp.getInitialVelocity());
                 PO.setLength(POtemp.getLength());
                 PO.setInitialAngle(POtemp.getInitialAngle());
                 PO.setAngle(POtemp.getInitialAngle());
                 PO.setGravity(POtemp.getGravity());
-                PO.setDt(POtemp.getDt());
 
                 //resets sliders to their old values
                 int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
@@ -757,7 +665,7 @@ public class Pendulum extends JFrame {
                 lengthS.setValue((int) (PO.getLength() * 1000));
                 initAngleS.setValue(angleInt);
 
-                variableChanged = false;
+                sliderChanged = false;
 
                 //disables the button if that was the last value in the stack
                 if(undoStack.empty()){
@@ -775,17 +683,17 @@ public class Pendulum extends JFrame {
     public class redoButtonPressed implements ActionListener{
         public void actionPerformed(ActionEvent redoButtonPressed){
             if(!redoStack.empty()){
+                //pushes the old values to the undo stack and allows the undo button to be pressed
+                undoStack.push(new PendulumObj(PO.getLength(), PO.getGravity(), PO.getAngle(), PO.getInitialAngle()));
+
                 //gets values from the redo stack
                 PendulumObj POtemp = redoStack.pop();
 
                 //resets variables in the pendulum object to their old values
-                PO.setVelocity(POtemp.getInitialVelocity());
-                PO.setVelocity(POtemp.getInitialVelocity());
                 PO.setLength(POtemp.getLength());
                 PO.setInitialAngle(POtemp.getInitialAngle());
                 PO.setAngle(POtemp.getInitialAngle());
                 PO.setGravity(POtemp.getGravity());
-                PO.setDt(POtemp.getDt());
 
                 //resets sliders to their old values
                 int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
@@ -794,11 +702,10 @@ public class Pendulum extends JFrame {
                 lengthS.setValue((int) (PO.getLength() * 1000));
                 initAngleS.setValue(angleInt);
 
-                variableChanged = false;
+                sliderChanged = false;
 
-                //pushes the old values to the redo stack and allows the redo button to be pressed
-                undoStack.push(new PendulumObj(POtemp.getLength(), POtemp.getVelocity(), POtemp.getInitialVelocity(),
-                        POtemp.getGravity(), POtemp.getAngle(), POtemp.getInitialAngle(), POtemp.getDt()));
+                //resets the timer
+                start = System.nanoTime();
 
                 //enables undo button if it was disabled
                 if(!undoB.isEnabled()){
@@ -820,13 +727,10 @@ public class Pendulum extends JFrame {
 
             PendulumObj POTemp = mapper.readValue(directory, PendulumObj.class);
 
-            PO.setVelocity(POTemp.getVelocity());
             PO.setAngle(POTemp.getInitialAngle());
             PO.setGravity(POTemp.getGravity());
             PO.setLength(POTemp.getLength());
             PO.setInitialAngle(POTemp.getInitialAngle());
-            PO.setDt(PO.getDt());
-            PO.setInitialVelocity(PO.getInitialVelocity());
 
             //sets the values of the sliders to the specified values
             gravityS.setValue((int)(PO.getGravity() * 100));
@@ -837,17 +741,15 @@ public class Pendulum extends JFrame {
             lengthS.setValue((int) (PO.getLength() * 1000));
 
             //sets the slider changed flag to false
-            variableChanged = false;
+            sliderChanged = false;
+
+            //resets the timer
+            start = System.nanoTime();
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. Check if you selected the correct file and retry.</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
         }
 
-    }
-
-    //Getter Methods
-    public Object getPendulumObject(){
-        return PO;
     }
 
     //main method sets the size and tits of the frame.

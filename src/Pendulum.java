@@ -224,7 +224,7 @@ public class Pendulum extends JFrame {
             g1.fillRect(0,0,getWidth(),getHeight());
 
 
-            //initialise the overlay which prints the current angle and velocity
+            //creates the overlay which prints the current angle and velocity
             g1.setColor(Color.black);
 
             int currentAngle = (int) (PO.getAngle() * (180/Math.PI));
@@ -233,19 +233,21 @@ public class Pendulum extends JFrame {
 
             g1.drawString("Current Angle: " + currentAngle + " degrees", 5, 15);
             g1.drawString("Time:" + time2 + " s", 5, 30);
-            //calculates the points of the pendulum and fixed point
+
+            //calculates the coordinates of the pendulum and fixed point
             calculatePoints();
 
             //draws fixed point
-            g1.setColor(Color.BLACK);
-            g1.drawLine(pointX, pointY, pendulumX, pendulumY);
+            g1.setColor(Color.black);
             g1.fillRoundRect(pointX - 2, pointY - 2, 4, 4, 4, 4);
+
+            //draws the pendulum string
+            g1.setColor(Color.black);
+            g1.drawLine(pointX, pointY, pendulumX, pendulumY);
 
             //draws pendulum bob
             g1.setColor(Color.RED);
             g1.fillRoundRect(pendulumX - 10, pendulumY - 10, 20, 20, 20, 20);
-
-
         }
 
         public void run(){
@@ -281,7 +283,11 @@ public class Pendulum extends JFrame {
             double angularVelocity = Math.pow((PO.getGravity() / PO.getLength()), 0.5);
             PO.setAngularVelocity(angularVelocity);
             double displacementAng = PO.getInitialAngle() * Math.cos(angularVelocity * diff);
-            PO.setAngle(displacementAng);
+            if(PO.getInitialAngle() == Math.PI || PO.getAngle() == -1 * Math.PI){
+                PO.setAngle(PO.getInitialAngle());
+            } else {
+                PO.setAngle(displacementAng);
+            }
         }
 
         private void calculatePoints(){

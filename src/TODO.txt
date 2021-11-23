@@ -1,4 +1,3 @@
 do the text field for mass spring
-make the main menu nicer
 make all the relevant try-catches output a message that the user can see
 mouse listener for mass spring?

@@ -16,6 +16,11 @@ public class MassSpring extends JFrame {
     long startTime;
     boolean sliderChanged = false;
 
+    //button used for text field inputs
+    JButton extraB;
+    //doubles used to store the temporary information of the text fields
+    double springConstantTF, displacementTF, lengthTF, massTF, extensionTF;
+
     //declare variables that are used for the sliders
     JPanel sliderPanel;
     JSlider massS, extensionS, springConstantS;
@@ -101,12 +106,19 @@ public class MassSpring extends JFrame {
         c.gridy = 5;
         sliderPanel.add(extensionSL, c);
 
-        springConstantSL = new JLabel("<HTML>Spring Constant<br>20N/kg</html>");
+        springConstantSL = new JLabel("<HTML>Spring Constant<br>20N/m</html>");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 7;
         sliderPanel.add(springConstantSL, c);
 
+        extraB = new JButton("More Inputs");
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 8;
+        sliderPanel.add(extraB, c);
+
+        //add the action listeners to the sliders/buttons
         massSChanged MSC = new massSChanged();
         massS.addChangeListener(MSC);
 
@@ -115,6 +127,9 @@ public class MassSpring extends JFrame {
 
         springConstantSChanged SCSC = new springConstantSChanged();
         springConstantS.addChangeListener(SCSC);
+
+        extraButtonPressed EBP = new extraButtonPressed();
+        extraB.addActionListener(EBP);
 
         //create the extra panel and all the buttons that go with it
         JPanel extraPanel = new JPanel();
@@ -144,7 +159,7 @@ public class MassSpring extends JFrame {
 
         c.fill = GridBagConstraints.VERTICAL;
         c.gridx = 1;
-        c.gridy = 1;
+        c.gridy = 2;
         add(extraPanel, c);
 
         c.fill = GridBagConstraints.VERTICAL;
@@ -342,6 +357,138 @@ public class MassSpring extends JFrame {
         }
     }
 
+    public class extraInputPanel extends JPanel{
+        //labels used to display information
+        JLabel springConstantL, springConstantUnit, displacementL, displacementUnit, lengthL, lengthUnit, massL, massUnit, extensionL, extensionUnit;
+        //text fields used to get inputs
+        JTextField springConstantTF, displacementTF, lengthTF, massTF, extensionTF;
+
+        JButton saveChanges;
+        public extraInputPanel(){
+            setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+
+            MassSpring.this.springConstantTF = MSO.getSpringConstant();
+            MassSpring.this.displacementTF = MSO.getDisplacement();
+            MassSpring.this.lengthTF = MSO.getLength();
+            MassSpring.this.massTF = MSO.getMass();
+            MassSpring.this.extensionTF = MSO.getAmplitude();
+
+            springConstantL = new JLabel("Spring Constant: ");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 0;
+            c.gridy = 0;
+            add(springConstantL, c);
+
+            springConstantTF = new JTextField("" + (Math.round(MSO.getSpringConstant() * 100) / 100));
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 1;
+            c.gridy = 0;
+            add(springConstantTF, c);
+
+            springConstantUnit = new JLabel("N/m");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 2;
+            c.gridy = 0;
+            add(springConstantUnit, c);
+
+            displacementL = new JLabel("Displacement: ");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 0;
+            c.gridy = 1;
+            add(displacementL, c);
+
+            displacementTF = new JTextField("" + (Math.round(MSO.getDisplacement() * 100)) / 100);
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 1;
+            c.gridy = 1;
+            add(displacementTF, c);
+
+            displacementUnit = new JLabel("cm");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 2;
+            c.gridy = 1;
+            add(displacementUnit, c);
+
+            lengthL = new JLabel("Length: ");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 0;
+            c.gridy = 2;
+            add(lengthL, c);
+
+            lengthTF = new JTextField("" + (Math.round(MSO.getLength() * 100) / 100));
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 1;
+            c.gridy = 2;
+            add(lengthTF, c);
+
+            lengthUnit = new JLabel("cm");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 2;
+            c.gridy = 2;
+            add(lengthUnit, c);
+
+            massL = new JLabel("Mass: ");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 0;
+            c.gridy = 3;
+            add(massL, c);
+
+            massTF = new JTextField("" + (Math.round(MSO.getMass() * 100)/ 100));
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 1;
+            c.gridy = 3;
+            add(massTF, c);
+
+            massUnit = new JLabel("kg");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 2;
+            c.gridy = 3;
+            add(massUnit, c);
+
+            extensionL = new JLabel("Extension: ");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 0;
+            c.gridy = 4;
+            add(extensionL, c);
+
+            extensionTF = new JTextField("" + (Math.round(MSO.getAmplitude() * 100) / 100));
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 1;
+            c.gridy = 4;
+            add(extensionTF, c);
+
+            extensionUnit = new JLabel("cm");
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 2;
+            c.gridy = 4;
+            add(extensionUnit, c);
+
+            saveChanges = new JButton("Save Changes");
+            saveChangesPressed SCP = new saveChangesPressed();
+        }
+
+        public class saveChangesPressed implements ActionListener{
+            double springConstantT, displacementT, lengthT, massT, amplitudeT;
+            boolean notNumber, SCHigh, SCLow, DHigh, DLow, LHigh, LLow, MHigh, ALow, AHigh, isValidated = true;
+
+            public void actionPerformed(ActionEvent event){
+                try{
+                    springConstantT = Double.parseDouble(springConstantTF.getText());
+                    if(springConstantT < 0){
+                        SCHigh = true;
+                        isValidated = false;
+                    } else if(springConstantT > 200) {
+                        SCLow = true;
+                        isValidated = false;
+                    }
+                } catch (NumberFormatException NFE){
+                    notNumber = true;
+                }
+            }
+        }
+    }
+
     //Change listeners for sliders change the value of their corresponding label and
     //the sliderChanged boolean to true so the simulation can be updated in the while loop
     public class massSChanged implements ChangeListener{
@@ -365,10 +512,23 @@ public class MassSpring extends JFrame {
     public class springConstantSChanged implements ChangeListener{
         public void stateChanged(ChangeEvent springConstantSChanged) {
             double newSpringConstant = springConstantS.getValue();
-            String newLabelString = "<HTML>Spring Constant:<br>" + newSpringConstant + "</br>N/kg</html>";
+            String newLabelString = "<HTML>Spring Constant:<br>" + newSpringConstant + "</br>N/m</html>";
             springConstantSL.setText(newLabelString);
 
             sliderChanged = true;
+        }
+    }
+
+    //creates a new frame for the other inputs
+    public class extraButtonPressed implements ActionListener{
+        public void actionPerformed(ActionEvent extraButtonPressed){
+            JFrame frame = new JFrame("Extra Inputs");
+            frame.setLayout(new FlowLayout());
+            extraInputPanel ep = new extraInputPanel();
+            frame.add(ep);
+
+            frame.pack();
+            frame.setVisible(true);
         }
     }
 

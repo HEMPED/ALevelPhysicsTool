@@ -6,8 +6,8 @@ import javax.swing.*;
 public class MainMenu extends JFrame{
     //The suffix B means that it is the main button that links to the program
     //The suffix E means that the button links to an external website that provides an explanation of the simulation
-    JButton pendulumB, massSpringB, button3, pendulumE, massSpringE, forcedVibrationE;
-    JLabel pendulumI, massSpringI, label3;
+    JButton pendulumB, massSpringB;
+    JLabel pendulumI, massSpringI;
     JMenuBar menuBar;
     JMenu help;
     JMenuItem info;
@@ -69,19 +69,6 @@ public class MainMenu extends JFrame{
         c.gridy = 0;
         imagePanel.add(massSpringI, c);
 
-        String forcedVibrationURL = "placeholder.png";
-        ImageIcon forcedVibrationIcon = new ImageIcon(forcedVibrationURL);
-        Image forcedVibrationImage = forcedVibrationIcon.getImage();
-        Image newforcedVibrationImage = forcedVibrationImage.getScaledInstance(120,84, Image.SCALE_SMOOTH);
-        forcedVibrationIcon = new ImageIcon(newforcedVibrationImage);
-
-        label3 = new JLabel(forcedVibrationIcon, JLabel.CENTER);
-        c = new GridBagConstraints();
-        c.insets = insets;
-        c.gridx = 2;
-        c.gridy = 0;
-        imagePanel.add(label3, c);
-
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 0;
@@ -103,14 +90,6 @@ public class MainMenu extends JFrame{
         c.gridy = 0;
         buttonPanel.add(massSpringB,c);
 
-        button3 = new JButton("<HTML>Forced<br>Vibration</html>");
-        button3.setPreferredSize(new Dimension(120,40));
-        c = new GridBagConstraints();
-        c.insets = insets;
-        c.gridx = 2;
-        c.gridy = 0;
-        buttonPanel.add(button3, c);
-
         pendulumBPressed PBP = new pendulumBPressed();
         pendulumB.addActionListener(PBP);
 
@@ -121,39 +100,6 @@ public class MainMenu extends JFrame{
         c.gridx = 0;
         c.gridy = 1;
         add(buttonPanel,c);
-
-        pendulumE = new JButton("Example");
-        pendulumE.setPreferredSize(new Dimension(100,30));
-        c = new GridBagConstraints();
-        c.insets = insets;
-        c.gridx = 0;
-        c.gridy = 0;
-        extraPanel.add(pendulumE, c);
-
-        massSpringE = new JButton("Example");
-        massSpringE.setPreferredSize(new Dimension(150,30));
-        c = new GridBagConstraints();
-        c.insets = insets;
-        c.gridx = 1;
-        c.gridy = 0;
-        extraPanel.add(massSpringE, c);
-
-        forcedVibrationE = new JButton("Example");
-        forcedVibrationE.setPreferredSize(new Dimension(120,30));
-        c = new GridBagConstraints();
-        c.insets = insets;
-        c.gridx = 2;
-        c.gridy = 0;
-        extraPanel.add(forcedVibrationE, c);
-
-        pendulumEPressed PEP = new pendulumEPressed();
-        pendulumE.addActionListener(PEP);
-
-        massSpringEPressed MSEP = new massSpringEPressed();
-        massSpringE.addActionListener(MSEP);
-
-        forcedVibrationEPressed FVEP = new forcedVibrationEPressed();
-        forcedVibrationE.addActionListener(FVEP);
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -184,44 +130,11 @@ public class MainMenu extends JFrame{
             ms.main(null);
         }
     }
-
-    //Action listeners for all buttons that link to explanations
-
-    public class pendulumEPressed implements ActionListener{
-        public void actionPerformed(ActionEvent pendulumEPressed){
-            try {
-                Desktop.getDesktop().browse(new URL("https://www.youtube.com/watch?v=G73CSDKFN-g").toURI());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public class massSpringEPressed implements ActionListener{
-        public void actionPerformed(ActionEvent massSpringEPressed){
-            try {
-                Desktop.getDesktop().browse(new URL("https://www.youtube.com/watch?v=FJBPNJR2QJU").toURI());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public class forcedVibrationEPressed implements ActionListener{
-        public void actionPerformed(ActionEvent forcedVibrationEPressed){
-            try {
-                Desktop.getDesktop().browse(new URL("https://youtu.be/zuLJZylmJB4").toURI());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public static void main(String[] args){
         MainMenu mainMenu = new MainMenu();
         mainMenu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainMenu.setVisible(true);
-        mainMenu.setSize(420,250);
+        mainMenu.pack();
         mainMenu.setTitle("Main Menu");
         mainMenu.setLocation(540, 200);
     }

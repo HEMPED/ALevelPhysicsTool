@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class MassSpring extends JFrame {
     //time used to calculate displacement
@@ -470,7 +471,7 @@ public class MassSpring extends JFrame {
 
         public class saveChangesPressed implements ActionListener{
             double springConstantT, displacementT, lengthT, massT, amplitudeT;
-            boolean notNumber, SCHigh, SCLow, DHigh, DLow, LHigh, LLow, MHigh, ALow, AHigh, isValidated = true;
+            boolean notNumber, SCHigh, SCLow, DHigh, DLow, LHigh, LLow, MHigh, MLow, AHigh, ALow, isValidated = true;
 
             public void actionPerformed(ActionEvent event){
                 try{
@@ -478,12 +479,86 @@ public class MassSpring extends JFrame {
                     if(springConstantT < 0){
                         SCHigh = true;
                         isValidated = false;
-                    } else if(springConstantT > 200) {
+                    } else {SCHigh = false;}
+                    if(springConstantT > 200) {
                         SCLow = true;
+                        isValidated = false;
+                    } else {SCLow = false;}
+                } catch (NumberFormatException NFE){
+                    notNumber = true;
+                    isValidated = false;
+                }
+
+                try{
+                    displacementT = Double.parseDouble(displacementTF.getText());
+                    if(displacementT < MSO.getLength() * -1){
+                        DLow = true;
+                        isValidated = false;
+                    } else {DLow = false;}
+                    if(displacementT > MSO.getLength()){
+                        DHigh = true;
+                        isValidated = false;
+                    } else {DHigh = false;}
+                }catch (NumberFormatException NFE){
+                    notNumber = true;
+                    isValidated = false;
+                }
+
+                try{
+                    lengthT = Double.parseDouble(lengthTF.getText());
+                    if(lengthT < MSO.getDisplacement()){
+                        LLow = true;
+                        isValidated = false;
+                    } else {LLow = false;}
+                    if(lengthT > 15){
+                        LHigh = true;
+                        isValidated = false;
+                    } else {LHigh = false;}
+                }catch (NumberFormatException NFE) {
+                    notNumber = true;
+                    isValidated = false;
+                }
+
+                try{
+                    massT = Double.parseDouble(massTF.getText());
+                    if(massT < 0){
+                        MLow = true;
+                        isValidated = false;
+                    }
+                    if(massT > 20){
+                        MHigh = true;
                         isValidated = false;
                     }
                 } catch (NumberFormatException NFE){
                     notNumber = true;
+                    isValidated = false;
+                }
+
+                try{
+                    amplitudeT = Double.parseDouble(extensionTF.getText());
+                    if(amplitudeT < MSO.getLength() * -1){
+                        ALow = true;
+                        isValidated = false;
+                    }
+                    if(amplitudeT > MSO.getLength()){
+                        AHigh = true;
+                        isValidated = false;
+                    }
+                } catch (NumberFormatException NFE){
+                    notNumber = true;
+                    isValidated = false;
+                }
+
+                if(isValidated){
+                    MassSpring.this.springConstantTF = springConstantT;
+                    MassSpring.this.displacementTF = displacementT;
+                    MassSpring.this.lengthTF = lengthT;
+                    MassSpring.this.massTF = massT;
+                    MassSpring.this.extensionTF = amplitudeT;
+
+                    notNumber = SCHigh = SCLow = DHigh = DLow = LLow = MHigh = MLow = AHigh = ALow = false;
+                } else {
+
                 }
             }
         }

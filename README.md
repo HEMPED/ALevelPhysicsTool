@@ -1,1 +1,1 @@
-# ALevelPhysicsTool
+# Simple Harmonic Motion Tool

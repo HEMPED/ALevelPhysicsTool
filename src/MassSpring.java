@@ -15,17 +15,20 @@ public class MassSpring extends JFrame {
     //time used to calculate displacement
     double time;
     long startTime;
-    boolean sliderChanged = false;
+    long currentTime;
 
     //button used for text field inputs
     JButton extraB;
     //doubles used to store the temporary information of the text fields
     double springConstantTF, displacementTF, lengthTF, massTF, extensionTF;
+    //boolean that allows the program to save values from the text fields
+    boolean TFChanged = false;
 
     //declare variables that are used for the sliders
     JPanel sliderPanel;
     JSlider massS, extensionS, springConstantS;
     JLabel massSL, extensionSL, springConstantSL;
+    boolean sliderChanged = false;
 
     //declare variables that are used for the menu bar
     JMenuBar menuBar;
@@ -315,20 +318,59 @@ public class MassSpring extends JFrame {
 
         public void run() {
             startTime = System.nanoTime();
-            long currentTime;
 
             while (true) {
                 //changes the simulation and pushes previous values to the undo stack if the sliders have been moved
                 if (sliderChanged) {
+                    //resets the timer
+                    startTime = System.nanoTime();
+
+                    //pushes old values to the undo stack
                     undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+                    undoB.setEnabled(true);
+
+                    //gets new values
                     double newMass = massS.getValue() / 100.0;
                     double newExtension = extensionS.getValue() / 100.0;
+
+                    //changes the simulation
                     MSO.setMass(newMass);
                     MSO.setDisplacement(newExtension);
                     MSO.setAmplitude(newExtension);
                     MSO.setSpringConstant(springConstantS.getValue());
-                    undoB.setEnabled(true);
+
+                    //resets the flag
                     sliderChanged = false;
+                }
+
+                if(TFChanged){
+                    //pushes old values to the undo stack
+                    undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+                    undoB.setEnabled(true);
+
+                    //changes the sliders
+                    massS.setValue((int) (massTF * 100));
+                    extensionS.setValue((int) (extensionTF * 100));
+                    springConstantS.setValue((int) springConstantTF);
+                    sliderChanged = false;
+
+                    //changes the values of the simulation
+                    MSO.setSpringConstant(springConstantTF);
+                    MSO.setMass(massTF);
+                    MSO.setDisplacement(displacementTF);
+                    MSO.setLength(lengthTF);
+                    MSO.setAmplitude(extensionTF);
+
+                    //gets the current time
+                    double angularVelocity = Math.pow((springConstantTF / massTF), 0.5);
+
+                    double time = displacementTF / extensionTF;
+                    time = Math.acos(time);
+                    time = time / angularVelocity;
+                    startTime = currentTime - (long) (time * 1000000000);
+
+                    //resets the flag
+                    TFChanged = false;
                 }
 
                 //only calculates motion if the mass isn't 0  to avoid errors
@@ -352,7 +394,7 @@ public class MassSpring extends JFrame {
                 try {
                     Thread.sleep(15);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "<HTML>Error running program, please restart</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -467,6 +509,12 @@ public class MassSpring extends JFrame {
 
             saveChanges = new JButton("Save Changes");
             saveChangesPressed SCP = new saveChangesPressed();
+            saveChanges.addActionListener(SCP);
+
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridx = 0;
+            c.gridy = 5;
+            add(saveChanges, c);
         }
 
         public class saveChangesPressed implements ActionListener{
@@ -490,21 +538,6 @@ public class MassSpring extends JFrame {
                 }
 
                 try{
-                    displacementT = Double.parseDouble(displacementTF.getText());
-                    if(displacementT < MSO.getLength() * -1){
-                        DLow = true;
-                        isValidated = false;
-                    } else {DLow = false;}
-                    if(displacementT > MSO.getLength()){
-                        DHigh = true;
-                        isValidated = false;
-                    } else {DHigh = false;}
-                }catch (NumberFormatException NFE){
-                    notNumber = true;
-                    isValidated = false;
-                }
-
-                try{
                     lengthT = Double.parseDouble(lengthTF.getText());
                     if(lengthT < MSO.getDisplacement()){
                         LLow = true;
@@ -515,6 +548,41 @@ public class MassSpring extends JFrame {
                         isValidated = false;
                     } else {LHigh = false;}
                 }catch (NumberFormatException NFE) {
+                    notNumber = true;
+                    isValidated = false;
+                }
+
+                try{
+                    amplitudeT = Double.parseDouble(extensionTF.getText());
+                    if (amplitudeT < lengthT * -1) {
+                        ALow = true;
+                        isValidated = false;
+                    }
+                    if (amplitudeT > lengthT) {
+                        AHigh = true;
+                        isValidated = false;
+                    }
+                } catch (NumberFormatException NFE){
+                    notNumber = true;
+                    isValidated = false;
+                }
+
+                try{
+                    displacementT = Double.parseDouble(displacementTF.getText());
+                    if (displacementT < Math.abs(amplitudeT) * -1) {
+                        DLow = true;
+                        isValidated = false;
+                    } else {
+                        DLow = false;
+                    }
+                    if (displacementT > Math.abs(amplitudeT)) {
+                        DHigh = true;
+                        isValidated = false;
+                    } else {
+
+                        DHigh = false;
+                    }
+                }catch (NumberFormatException NFE){
                     notNumber = true;
                     isValidated = false;
                 }
@@ -534,31 +602,44 @@ public class MassSpring extends JFrame {
                     isValidated = false;
                 }
 
-                try{
-                    amplitudeT = Double.parseDouble(extensionTF.getText());
-                    if(amplitudeT < MSO.getLength() * -1){
-                        ALow = true;
-                        isValidated = false;
-                    }
-                    if(amplitudeT > MSO.getLength()){
-                        AHigh = true;
-                        isValidated = false;
-                    }
-                } catch (NumberFormatException NFE){
-                    notNumber = true;
-                    isValidated = false;
-                }
-
                 if(isValidated){
+                    //stores the values
                     MassSpring.this.springConstantTF = springConstantT;
                     MassSpring.this.displacementTF = displacementT;
                     MassSpring.this.lengthTF = lengthT;
                     MassSpring.this.massTF = massT;
                     MassSpring.this.extensionTF = amplitudeT;
 
+                    //resets the flags
                     notNumber = SCHigh = SCLow = DHigh = DLow = LLow = MHigh = MLow = AHigh = ALow = false;
+                    TFChanged = true;
                 } else {
-
+                    extraInputPanel ep = new extraInputPanel();
+                    if(notNumber){
+                        JOptionPane.showMessageDialog(ep, "<HTML>Only numbers allowed</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        notNumber = false;
+                    } else if(SCHigh || SCLow){
+                        JOptionPane.showMessageDialog(ep, "<HTML>Spring constant must be between 1 and 200</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        SCHigh = SCLow = false;
+                    } else if(DHigh || DLow){
+                        JOptionPane.showMessageDialog(ep, "<HTML>Displacement must be lower than the extension</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        DHigh = DLow = false;
+                    } else if (LLow){
+                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be positive</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        LLow = false;
+                    } else if (LHigh){
+                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be less than 15</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        LHigh = false;
+                    } else if (MLow){
+                        JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be negative</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        MLow = false;
+                    } else if (MHigh){
+                        JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be more than 10</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        MHigh = false;
+                    } else if (AHigh || ALow) {
+                        JOptionPane.showMessageDialog(ep, "<HTML>Extension cannot be more than length</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        AHigh = ALow = false;
+                    }
                 }
             }
         }

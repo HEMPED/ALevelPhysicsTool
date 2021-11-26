@@ -1,3 +1,2 @@
-do the text field for mass spring
 make all the relevant try-catches output a message that the user can see
 mouse listener for mass spring?

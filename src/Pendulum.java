@@ -272,7 +272,7 @@ public class Pendulum extends JFrame {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "<HTML>Error running the program, please restart</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }

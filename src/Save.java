@@ -81,14 +81,14 @@ public class Save extends JPanel {
             try {
                 write(directory, obj);
             } catch (IOException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "<HTML>Error writing to file, please retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
         } else {
             renameFile();
             try {
                 write(directory, obj);
             } catch (IOException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "<HTML>Error writing to file, please retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

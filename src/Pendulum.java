@@ -5,14 +5,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Stack;
 
 public class Pendulum extends JFrame {
+    //boolean used to stop the program
+    boolean running = true;
+
     //declare pendulum object
     PendulumObj PO;
 
@@ -260,7 +261,7 @@ public class Pendulum extends JFrame {
         }
 
         private void calculate(){
-            while(true) {
+            while(running) {
                 end = System.nanoTime();
                 diff = (end - start) / 1000000000.0;
                 //checks if any values have been changed
@@ -758,13 +759,24 @@ public class Pendulum extends JFrame {
 
     }
 
+    //setter methods
+    public void setRunning(boolean b){
+        running = b;
+    }
     //main method sets the size and tits of the frame.
     public static void main(String[] args){
         Pendulum pendulum = new Pendulum();
         pendulum.setVisible(true);
         pendulum.setSize(800,800);
+        //starts maximised as the pendulum takes up a lot of room
         pendulum.setExtendedState(JFrame.MAXIMIZED_BOTH);
         pendulum.setTitle("Pendulum");
         pendulum.setLocation(0, 0);
+        //window listener allows the user to save system resources when the x button is pressed by stopping the simulation
+        pendulum.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                pendulum.setRunning(false);
+            }
+        });
     }
 }

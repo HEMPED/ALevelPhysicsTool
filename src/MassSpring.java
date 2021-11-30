@@ -6,12 +6,17 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
 public class MassSpring extends JFrame {
+    //boolean used to stop the program if it is exited
+    boolean running = true;
+
     //time used to calculate displacement
     double time;
     long startTime;
@@ -110,7 +115,8 @@ public class MassSpring extends JFrame {
         c.gridy = 5;
         sliderPanel.add(extensionSL, c);
 
-        springConstantSL = new JLabel("<HTML>Spring Constant<br>20N/m</html>");
+        //HTML used so the button has a line break
+        springConstantSL = new JLabel("<HTML>Spring Constant<br></br>20N/m</html>");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 7;
@@ -231,7 +237,7 @@ public class MassSpring extends JFrame {
                 }
             }
 
-            //overlay
+            //overlay used to display changing variables that the user wants to keep track of
             int overlayAnchorX = getWidth() - 150;
             int overlayAnchorY = 15;
 
@@ -245,25 +251,24 @@ public class MassSpring extends JFrame {
         }
 
         //method used to split the spring into a series of points, calculated from its extended or compressed length
-        //method also calculates how the spring squeezes.
+        //method also calculates how the spring squeezes when it nears its maximum positive displacement.
         private void calculatePoints(double length) {
             int pointX, pointY;
-            int anchorX, anchorY;
+            int anchorX, anchorY = 30;
             double changeInLength = length / 50;
-            //used for the compression factor as the spring stretches.
+            //used for the compression factor as the spring stretches
+            //ratio of displacement/amplitude used as it nears 1 as the spring reaches its maximum displacement
             double displacementRatio = MSO.getDisplacement() / MSO.getAmplitude();
             displacementRatio = Math.abs(displacementRatio);
 
-            anchorY = 30;
-
+            //resets the arraylist
             points.clear();
 
 
             for (int x = 1; x < 50; x++) {
-
+                //only squeezes the spring horizontally if the displacement is positive
                 if (MSO.getDisplacement() > 0) {
                     anchorX = 100 + (int) (10 * displacementRatio);
-
                     if (x % 2 == 0) {
                         pointX = anchorX;
                     } else {
@@ -272,6 +277,7 @@ public class MassSpring extends JFrame {
 
                     pointY = (int) (anchorY + changeInLength * x);
 
+                    //is the "starting point" of the spring
                     if (x == 1) {
                         int tempX = pointX - (pointX - anchorX) / 2;
                         points.add(new Point(tempX, (anchorY - 15)));
@@ -287,6 +293,7 @@ public class MassSpring extends JFrame {
 
                     pointY = (int) (anchorY + changeInLength * x);
 
+                    //is the "starting point" of the spring.
                     if (x == 1) {
                         int tempX = anchorX + 50;
                         points.add(new Point(tempX, (anchorY - 15)));
@@ -295,6 +302,7 @@ public class MassSpring extends JFrame {
                 }
                 points.add(new Point(pointX, pointY));
 
+                //is the "end point" of the spring.
                 if (x == 49) {
                     int tempX = pointX - (pointX - anchorX) / 2;
                     points.add(new Point(tempX, (pointY + 15)));
@@ -319,7 +327,7 @@ public class MassSpring extends JFrame {
         public void run() {
             startTime = System.nanoTime();
 
-            while (true) {
+            while (running) {
                 //changes the simulation and pushes previous values to the undo stack if the sliders have been moved
                 if (sliderChanged) {
                     //resets the timer
@@ -411,12 +419,15 @@ public class MassSpring extends JFrame {
             setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
 
+            //resets the values of the ..TF variables
             MassSpring.this.springConstantTF = MSO.getSpringConstant();
             MassSpring.this.displacementTF = MSO.getDisplacement();
             MassSpring.this.lengthTF = MSO.getLength();
             MassSpring.this.massTF = MSO.getMass();
             MassSpring.this.extensionTF = MSO.getAmplitude();
 
+            //layout displays the name of the variable, its corresponding text field and the unit.
+            //text fields initially contain the current variables (to 2 d.p. if they are fractions)
             springConstantL = new JLabel("Spring Constant: ");
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 0;
@@ -517,11 +528,13 @@ public class MassSpring extends JFrame {
             add(saveChanges, c);
         }
 
+        //validates the data and saves it in the ...TF variables if it is valid.
         public class saveChangesPressed implements ActionListener{
             double springConstantT, displacementT, lengthT, massT, amplitudeT;
             boolean notNumber, SCHigh, SCLow, DHigh, DLow, LHigh, LLow, MHigh, MLow, AHigh, ALow, isValidated = true;
 
             public void actionPerformed(ActionEvent event){
+                //ensures spring constant is a number between 1 and 200
                 try{
                     springConstantT = Double.parseDouble(springConstantTF.getText());
                     if(springConstantT < 0){
@@ -537,9 +550,10 @@ public class MassSpring extends JFrame {
                     isValidated = false;
                 }
 
+                //length is a number between the amplitude and 15
                 try{
                     lengthT = Double.parseDouble(lengthTF.getText());
-                    if(lengthT < MSO.getDisplacement()){
+                    if(lengthT < MSO.getAmplitude()){
                         LLow = true;
                         isValidated = false;
                     } else {LLow = false;}
@@ -614,39 +628,34 @@ public class MassSpring extends JFrame {
                     notNumber = SCHigh = SCLow = DHigh = DLow = LLow = MHigh = MLow = AHigh = ALow = false;
                     TFChanged = true;
                 } else {
+                    //displays error messages
+                    //messages are in HTML so they wrap the JDialog.
                     extraInputPanel ep = new extraInputPanel();
                     if(notNumber){
                         JOptionPane.showMessageDialog(ep, "<HTML>Only numbers allowed</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        notNumber = false;
                     } else if(SCHigh || SCLow){
                         JOptionPane.showMessageDialog(ep, "<HTML>Spring constant must be between 1 and 200</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        SCHigh = SCLow = false;
                     } else if(DHigh || DLow){
                         JOptionPane.showMessageDialog(ep, "<HTML>Displacement must be lower than the extension</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        DHigh = DLow = false;
-                    } else if (LLow){
-                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be positive</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        LLow = false;
+                    } else if (LLow || AHigh || ALow){
+                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be more than extension</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (LHigh){
                         JOptionPane.showMessageDialog(ep, "<HTML>Length must be less than 15</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        LHigh = false;
                     } else if (MLow){
                         JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be negative</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        MLow = false;
-                    } else if (MHigh){
+                    } else if (MHigh) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be more than 10</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        MHigh = false;
-                    } else if (AHigh || ALow) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Extension cannot be more than length</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        AHigh = ALow = false;
                     }
+                    //resets booleans
+                    notNumber = SCHigh = SCLow = DHigh = DLow = LHigh = LLow = MHigh = MLow = AHigh = ALow = false;
+                    isValidated = true;
                 }
             }
         }
     }
 
     //Change listeners for sliders change the value of their corresponding label and
-    //the sliderChanged boolean to true so the simulation can be updated in the while loop
+    //the sliderChanged boolean to true so the simulation can be updated in the main while loop
     public class massSChanged implements ChangeListener{
         public void stateChanged(ChangeEvent massSChanged) {
             double newMass = (double) massS.getValue() / 100;
@@ -729,7 +738,13 @@ public class MassSpring extends JFrame {
                 MSO.setAmplitude(MSOtemp.getAmplitude());
                 MSO.setMass(MSOtemp.getMass());
 
-                startTime = System.nanoTime();
+                //gets the current time
+                double angularVelocity = Math.pow((MSO.getSpringConstant() / MSO.getMass()), 0.5);
+
+                double time = MSO.getDisplacement() / MSO.getAmplitude();
+                time = Math.acos(time);
+                time = time / angularVelocity;
+                startTime = currentTime - (long) (time * 1000000000);
 
                 //resets sliders to their old values
                 massS.setValue((int) (MSO.getMass() * 100));
@@ -765,7 +780,13 @@ public class MassSpring extends JFrame {
                 MSO.setAmplitude(MSOtemp.getAmplitude());
                 MSO.setMass(MSOtemp.getMass());
 
-                startTime = System.nanoTime();
+                //gets the current time
+                double angularVelocity = Math.pow((MSO.getSpringConstant() / MSO.getMass()), 0.5);
+
+                double time = MSO.getDisplacement() / MSO.getAmplitude();
+                time = Math.acos(time);
+                time = time / angularVelocity;
+                startTime = currentTime - (long) (time * 1000000000);
 
                 //resets sliders to their old values
                 massS.setValue((int) (MSO.getMass() * 100));
@@ -789,6 +810,9 @@ public class MassSpring extends JFrame {
         try{
             ObjectMapper mapper = new ObjectMapper();
 
+            //pushes old values to the undo stack
+            undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+
             //gets the values from file
             MassSpringObj MSOTemp = mapper.readValue(directory, MassSpringObj.class);
 
@@ -801,7 +825,15 @@ public class MassSpring extends JFrame {
             MSO.setMass(MSOTemp.getMass());
             MSO.setAmplitude(MSOTemp.getAmplitude());
 
-            startTime = System.nanoTime();
+            //gets the current time
+            double angularVelocity = Math.pow((MSO.getSpringConstant() / MSO.getMass()), 0.5);
+
+            double time = MSO.getDisplacement() / MSO.getAmplitude();
+            time = Math.acos(time);
+            time = time / angularVelocity;
+            startTime = currentTime - (long) (time * 1000000000);
+
+            //pushes old values to the undo stack
             undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
 
             //sets the values of the sliders
@@ -818,6 +850,11 @@ public class MassSpring extends JFrame {
 
     }
 
+    //setter methods
+    public void setRunning(boolean b){
+        running = b;
+    }
+
     //sets up the window
     public static void main(String[] args){
         MassSpring frame = new MassSpring();
@@ -826,5 +863,12 @@ public class MassSpring extends JFrame {
         frame.setTitle("Mass Spring System");
         frame.setLocation(0, 0);
         frame.setVisible(true);
+
+        //window listener allows the user to save system resources when the x button is pressed by stopping the simulation
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                frame.setRunning(false);
+            }
+        });
     }
 }

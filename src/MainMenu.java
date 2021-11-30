@@ -7,7 +7,6 @@ public class MainMenu extends JFrame{
     //The suffix B means that it is the main button that links to the program
     //The suffix E means that the button links to an external website that provides an explanation of the simulation
     JButton pendulumB, massSpringB;
-    JLabel pendulumI, massSpringI;
     JMenuBar menuBar;
     JMenu help;
     JMenuItem info;
@@ -17,17 +16,9 @@ public class MainMenu extends JFrame{
         setLayout(new GridBagLayout());
         GridBagConstraints c;
 
-        //Will contain all the images that accompany each section.
-        JPanel imagePanel = new JPanel();
-        imagePanel.setLayout(new GridBagLayout());
-
         //Will contain all the buttons that link to the corresponding section of the program
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridBagLayout());
-
-        //Will contain all the buttons that link to explanations on separate websites.
-        JPanel extraPanel = new JPanel();
-        extraPanel.setLayout(new GridBagLayout());
 
         final Insets insets = new Insets(1,1,1,1);
 
@@ -42,37 +33,6 @@ public class MainMenu extends JFrame{
 
         infoPressed IP = new infoPressed();
         info.addActionListener(IP);
-
-        String pendulumURL = "pendulum.png";
-        ImageIcon pendulumIcon = new ImageIcon(pendulumURL);
-        Image pendulumImage = pendulumIcon.getImage();
-        Image newPendulumImage = pendulumImage.getScaledInstance(100,84, Image.SCALE_SMOOTH);
-        pendulumIcon = new ImageIcon(newPendulumImage);
-
-        pendulumI = new JLabel(pendulumIcon, JLabel.CENTER);
-        c = new GridBagConstraints();
-        c.insets = insets;
-        c.gridx = 0;
-        c.gridy = 0;
-        imagePanel.add(pendulumI, c);
-
-        String massSpringURL = "massSpring.png";
-        ImageIcon massSpringIcon = new ImageIcon(massSpringURL);
-        Image massSpringImage = massSpringIcon.getImage();
-        Image newMassSpringImage = massSpringImage.getScaledInstance(150,84, Image.SCALE_SMOOTH);
-        massSpringIcon = new ImageIcon(newMassSpringImage);
-
-        massSpringI = new JLabel(massSpringIcon, JLabel.CENTER);
-        c = new GridBagConstraints();
-        c.insets = insets;
-        c.gridx = 1;
-        c.gridy = 0;
-        imagePanel.add(massSpringI, c);
-
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 0;
-        add(imagePanel,c);
 
         pendulumB = new JButton("Pendulum");
         pendulumB.setPreferredSize(new Dimension(100,40));
@@ -100,11 +60,6 @@ public class MainMenu extends JFrame{
         c.gridx = 0;
         c.gridy = 1;
         add(buttonPanel,c);
-
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 3;
-        add(extraPanel,c);
     }
 
     //Action listener for the info button
@@ -135,7 +90,7 @@ public class MainMenu extends JFrame{
         mainMenu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainMenu.setVisible(true);
         mainMenu.pack();
-        mainMenu.setTitle("Main Menu");
+        mainMenu.setTitle("Simple Harmonic Motion");
         mainMenu.setLocation(540, 200);
     }
 }

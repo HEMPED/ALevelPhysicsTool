@@ -10,15 +10,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Downloads/jfreechart-1.5.3.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://$USER_HOME$/Downloads/jcommon-1.0.24.jar!/" />
         </CLASSES>
         <JAVADOC />

@@ -4,8 +4,8 @@ import java.net.URL;
 import javax.swing.*;
 
 public class MainMenu extends JFrame{
-    //The suffix B means that it is the main button that links to the program
-    //The suffix E means that the button links to an external website that provides an explanation of the simulation
+    //The suffix B means that it is the main button that links to the
+    // program
     JButton pendulumB, massSpringB;
     JMenuBar menuBar;
     JMenu help;
@@ -16,7 +16,8 @@ public class MainMenu extends JFrame{
         setLayout(new GridBagLayout());
         GridBagConstraints c;
 
-        //Will contain all the buttons that link to the corresponding section of the program
+        //Will contain all the buttons that link to the corresponding
+        //section of the program
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridBagLayout());
 
@@ -66,7 +67,9 @@ public class MainMenu extends JFrame{
 
     public class infoPressed implements ActionListener{
         public void actionPerformed(ActionEvent infoPressed){
-            JOptionPane.showMessageDialog(dialogueFrame, "Created by Hemanath Peddireddi", "More Information", JOptionPane.PLAIN_MESSAGE);
+            JOptionPane.showMessageDialog(dialogueFrame,
+                    "Created by Hemanath Peddireddi", "More Information",
+                    JOptionPane.PLAIN_MESSAGE);
         }
     }
 

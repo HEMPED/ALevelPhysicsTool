@@ -279,11 +279,15 @@ public class Pendulum extends JFrame {
         }
 
         private void calculateDisplacement(){
+            //calculates time period
             double timePeriod = 2 * Math.PI * Math.pow((PO.getLength() / PO.getGravity()), 0.5);
             PO.setTimePeriod(timePeriod);
+            //calculates angular velocity
             double angularVelocity = Math.pow((PO.getGravity() / PO.getLength()), 0.5);
             PO.setAngularVelocity(angularVelocity);
+            //calculates displacement
             double displacementAng = PO.getInitialAngle() * Math.cos(angularVelocity * diff);
+            //sets the displacement as the angle
             if(PO.getInitialAngle() == Math.PI || PO.getAngle() == -1 * Math.PI){
                 PO.setAngle(PO.getInitialAngle());
             } else {
@@ -291,6 +295,7 @@ public class Pendulum extends JFrame {
             }
         }
 
+        //method calculates the coordinate of the fixed point and the pendulum bob
         private void calculatePoints(){
             pointX = getWidth()/2;
             pointY = getHeight()/10;
@@ -340,6 +345,7 @@ public class Pendulum extends JFrame {
             }
         }
 
+        //mouse listener added to the pendulumPanel and allows the user to quickly change the position of the pendulum
         class MListener extends MouseInputAdapter {
             public void mousePressed(MouseEvent e){
                 double diffX, diffY, length, angle = 45;
@@ -395,6 +401,7 @@ public class Pendulum extends JFrame {
             c.insets = new Insets(3,3,3,3);
             setBackground(Color.white);
 
+            //displays the variable, current value in the text field and the unit
             gravityL = new JLabel("Gravity: ");
             gravityL.setBackground(Color.white);
             c.fill = GridBagConstraints.HORIZONTAL;
@@ -453,6 +460,7 @@ public class Pendulum extends JFrame {
             c.gridy = 2;
             add(initAngleUnit, c);
 
+            //initiates the data validation
             saveChanges = new JButton("Save Changes");
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 0;
@@ -475,13 +483,14 @@ public class Pendulum extends JFrame {
             add(errors, c);
         }
 
+        //One label is used to display all errors as it may be easier for the user to read and correct.
         public class saveChangesPressed implements ActionListener{
             //initialise values that are used within the class. ""T is used to store a temporary variable that is being validated
             boolean isValidated = true;
             double lengthT = 5, gravityT = 9.81, initAngleT = 45, initVelocityT = 0;
 
             public void actionPerformed(ActionEvent saveChangesPressed){
-                //re-validates data every time the saveChanges button is pressed
+                //clears the label every time the button is pressed
                 errors.setText("");
 
                 //makes sure gravity is a number and negative or above 20N/kg

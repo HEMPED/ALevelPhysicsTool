@@ -11,7 +11,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 public class MassSpring extends JFrame {
     //boolean used to stop the program if it is exited
@@ -47,11 +46,11 @@ public class MassSpring extends JFrame {
     protected Stack<MassSpringObj> redoStack = new Stack<>();
     JButton undoB, redoB;
 
-    public MassSpring(){
+    public MassSpring() {
         //sets the layout of the whole frame
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(3,3,3,3);
+        c.insets = new Insets(3, 3, 3, 3);
 
         //menuBar used for save and load functions
         menuBar = new JMenuBar();
@@ -178,6 +177,7 @@ public class MassSpring extends JFrame {
         c.gridy = 0;
         add(sliderPanel, c);
 
+        //weightx and weighty are set to 1 to make sure the simulation takes up as much space as possible
         MassSpringPanel massSpringPanel = new MassSpringPanel();
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
@@ -185,6 +185,7 @@ public class MassSpring extends JFrame {
         c.weightx = 1;
         c.weighty = 1;
         add(massSpringPanel, c);
+        //starts the simulation
         new Thread(massSpringPanel).start();
     }
 
@@ -246,8 +247,8 @@ public class MassSpring extends JFrame {
             double displacement = Math.round(MSO.getDisplacement() * 100) / 100.0;
             double time2 = time % MSO.getTimePeriod();
             time2 = Math.round(time2 * 100) / 100.0;
-            g.drawString("Displacement: " + displacement + "cm",overlayAnchorX, overlayAnchorY);
-            g.drawString("Time: " + time2 + "s",overlayAnchorX, overlayAnchorY + 15);
+            g.drawString("Displacement: " + displacement + "cm", overlayAnchorX, overlayAnchorY);
+            g.drawString("Time: " + time2 + "s", overlayAnchorX, overlayAnchorY + 15);
         }
 
         //method used to split the spring into a series of points, calculated from its extended or compressed length
@@ -351,7 +352,7 @@ public class MassSpring extends JFrame {
                     sliderChanged = false;
                 }
 
-                if(TFChanged){
+                if (TFChanged) {
                     //pushes old values to the undo stack
                     undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
                     undoB.setEnabled(true);
@@ -408,14 +409,15 @@ public class MassSpring extends JFrame {
         }
     }
 
-    public class extraInputPanel extends JPanel{
+    public class extraInputPanel extends JPanel {
         //labels used to display information
         JLabel springConstantL, springConstantUnit, displacementL, displacementUnit, lengthL, lengthUnit, massL, massUnit, extensionL, extensionUnit;
         //text fields used to get inputs
         JTextField springConstantTF, displacementTF, lengthTF, massTF, extensionTF;
 
         JButton saveChanges;
-        public extraInputPanel(){
+
+        public extraInputPanel() {
             setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
 
@@ -488,7 +490,7 @@ public class MassSpring extends JFrame {
             c.gridy = 3;
             add(massL, c);
 
-            massTF = new JTextField("" + (Math.round(MSO.getMass() * 100)/ 100));
+            massTF = new JTextField("" + (Math.round(MSO.getMass() * 100) / 100));
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 1;
             c.gridy = 3;
@@ -529,44 +531,52 @@ public class MassSpring extends JFrame {
         }
 
         //validates the data and saves it in the ...TF variables if it is valid.
-        public class saveChangesPressed implements ActionListener{
+        public class saveChangesPressed implements ActionListener {
             double springConstantT, displacementT, lengthT, massT, amplitudeT;
             boolean notNumber, SCHigh, SCLow, DHigh, DLow, LHigh, LLow, MHigh, MLow, AHigh, ALow, isValidated = true;
 
-            public void actionPerformed(ActionEvent event){
+            public void actionPerformed(ActionEvent event) {
                 //ensures spring constant is a number between 1 and 200
-                try{
+                try {
                     springConstantT = Double.parseDouble(springConstantTF.getText());
-                    if(springConstantT < 0){
+                    if (springConstantT < 0) {
                         SCHigh = true;
                         isValidated = false;
-                    } else {SCHigh = false;}
-                    if(springConstantT > 200) {
+                    } else {
+                        SCHigh = false;
+                    }
+                    if (springConstantT > 200) {
                         SCLow = true;
                         isValidated = false;
-                    } else {SCLow = false;}
-                } catch (NumberFormatException NFE){
+                    } else {
+                        SCLow = false;
+                    }
+                } catch (NumberFormatException NFE) {
                     notNumber = true;
                     isValidated = false;
                 }
 
                 //length is a number between the amplitude and 15
-                try{
+                try {
                     lengthT = Double.parseDouble(lengthTF.getText());
-                    if(lengthT < MSO.getAmplitude()){
+                    if (lengthT < MSO.getAmplitude()) {
                         LLow = true;
                         isValidated = false;
-                    } else {LLow = false;}
-                    if(lengthT > 15){
+                    } else {
+                        LLow = false;
+                    }
+                    if (lengthT > 15) {
                         LHigh = true;
                         isValidated = false;
-                    } else {LHigh = false;}
-                }catch (NumberFormatException NFE) {
+                    } else {
+                        LHigh = false;
+                    }
+                } catch (NumberFormatException NFE) {
                     notNumber = true;
                     isValidated = false;
                 }
 
-                try{
+                try {
                     amplitudeT = Double.parseDouble(extensionTF.getText());
                     if (amplitudeT < lengthT * -1) {
                         ALow = true;
@@ -576,12 +586,12 @@ public class MassSpring extends JFrame {
                         AHigh = true;
                         isValidated = false;
                     }
-                } catch (NumberFormatException NFE){
+                } catch (NumberFormatException NFE) {
                     notNumber = true;
                     isValidated = false;
                 }
 
-                try{
+                try {
                     displacementT = Double.parseDouble(displacementTF.getText());
                     if (displacementT < Math.abs(amplitudeT) * -1) {
                         DLow = true;
@@ -596,27 +606,27 @@ public class MassSpring extends JFrame {
 
                         DHigh = false;
                     }
-                }catch (NumberFormatException NFE){
+                } catch (NumberFormatException NFE) {
                     notNumber = true;
                     isValidated = false;
                 }
 
-                try{
+                try {
                     massT = Double.parseDouble(massTF.getText());
-                    if(massT < 0){
+                    if (massT < 0) {
                         MLow = true;
                         isValidated = false;
                     }
-                    if(massT > 20){
+                    if (massT > 20) {
                         MHigh = true;
                         isValidated = false;
                     }
-                } catch (NumberFormatException NFE){
+                } catch (NumberFormatException NFE) {
                     notNumber = true;
                     isValidated = false;
                 }
 
-                if(isValidated){
+                if (isValidated) {
                     //stores the values
                     MassSpring.this.springConstantTF = springConstantT;
                     MassSpring.this.displacementTF = displacementT;
@@ -631,17 +641,17 @@ public class MassSpring extends JFrame {
                     //displays error messages
                     //messages are in HTML so they wrap the JDialog.
                     extraInputPanel ep = new extraInputPanel();
-                    if(notNumber){
+                    if (notNumber) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Only numbers allowed</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    } else if(SCHigh || SCLow){
+                    } else if (SCHigh || SCLow) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Spring constant must be between 1 and 200</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    } else if(DHigh || DLow){
+                    } else if (DHigh || DLow) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Displacement must be lower than the extension</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    } else if (LLow || AHigh || ALow){
+                    } else if (LLow || AHigh || ALow) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Length must be more than extension</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    } else if (LHigh){
+                    } else if (LHigh) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Length must be less than 15</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    } else if (MLow){
+                    } else if (MLow) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be negative</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (MHigh) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be more than 10</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);

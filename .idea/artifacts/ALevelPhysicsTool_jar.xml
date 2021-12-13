@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ALevelPhysicsTool:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ALevelPhysicsTool_jar</output-path>
+    <root id="archive" name="ALevelPhysicsTool.jar">
+      <element id="module-output" name="ALevelPhysicsTool" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/jar_files/jackson-databind-2.13.0-rc1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/jar_files/jackson-core-2.13.0-rc1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/jar_files/jackson-annotations-2.13.0-rc1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/jcommon-1.0.24.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

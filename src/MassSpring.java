@@ -335,7 +335,8 @@ public class MassSpring extends JFrame {
                     startTime = System.nanoTime();
 
                     //pushes old values to the undo stack
-                    undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+                    undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(),
+                            MSO.getMass(), MSO.getAmplitude()));
                     undoB.setEnabled(true);
 
                     //gets new values
@@ -354,7 +355,8 @@ public class MassSpring extends JFrame {
 
                 if (TFChanged) {
                     //pushes old values to the undo stack
-                    undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+                    undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(),
+                            MSO.getMass(), MSO.getAmplitude()));
                     undoB.setEnabled(true);
 
                     //changes the sliders
@@ -576,6 +578,7 @@ public class MassSpring extends JFrame {
                     isValidated = false;
                 }
 
+                //amplitude is a number less than the length
                 try {
                     amplitudeT = Double.parseDouble(extensionTF.getText());
                     if (amplitudeT < lengthT * -1) {
@@ -591,9 +594,10 @@ public class MassSpring extends JFrame {
                     isValidated = false;
                 }
 
+                //displacement is a number less than or equal to the amplitude
                 try {
                     displacementT = Double.parseDouble(displacementTF.getText());
-                    if (displacementT < Math.abs(amplitudeT) * -1) {
+                    if (displacementT <= Math.abs(amplitudeT) * -1) {
                         DLow = true;
                         isValidated = false;
                     } else {
@@ -611,6 +615,7 @@ public class MassSpring extends JFrame {
                     isValidated = false;
                 }
 
+                //mass is a number between 0 and 20
                 try {
                     massT = Double.parseDouble(massTF.getText());
                     if (massT < 0) {
@@ -777,7 +782,8 @@ public class MassSpring extends JFrame {
         public void actionPerformed(ActionEvent redoButtonPressed){
             if(!redoStack.empty()){
                 //adds current values to the undo stack
-                undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+                undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(),
+                        MSO.getMass(), MSO.getAmplitude()));
 
                 //gets the old values
                 MassSpringObj MSOtemp = redoStack.pop();
@@ -821,7 +827,8 @@ public class MassSpring extends JFrame {
             ObjectMapper mapper = new ObjectMapper();
 
             //pushes old values to the undo stack
-            undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+            undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(),
+                    MSO.getMass(), MSO.getAmplitude()));
 
             //gets the values from file
             MassSpringObj MSOTemp = mapper.readValue(directory, MassSpringObj.class);
@@ -844,7 +851,8 @@ public class MassSpring extends JFrame {
             startTime = currentTime - (long) (time * 1000000000);
 
             //pushes old values to the undo stack
-            undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
+            undoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(),
+                    MSO.getMass(), MSO.getAmplitude()));
 
             //sets the values of the sliders
             sliderChanged = false;
@@ -855,7 +863,8 @@ public class MassSpring extends JFrame {
 
         } catch (IOException e) {
             //lets the user know if there was an error
-            JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. Check if you selected the correct file and retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. " +
+                    "Check if you selected the correct file and retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
         }
 
     }

@@ -273,7 +273,9 @@ public class Pendulum extends JFrame {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
-                    JOptionPane.showMessageDialog(this, "<HTML>Error running the program, please restart</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                            "<HTML>Error running the program, please restart</HTML>",
+                            "ERROR", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -491,7 +493,8 @@ public class Pendulum extends JFrame {
 
         //One label is used to display all errors as it may be easier for the user to read and correct.
         public class saveChangesPressed implements ActionListener{
-            //initialise values that are used within the class. ""T is used to store a temporary variable that is being validated
+            //initialise values that are used within the class. ""T is used to store a temporary variable that is
+            //being validated
             boolean isValidated = true;
             double lengthT = 5, gravityT = 9.81, initAngleT = 45, initVelocityT = 0;
 
@@ -769,7 +772,8 @@ public class Pendulum extends JFrame {
             start = System.nanoTime();
 
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. Check if you selected the correct file and retry.</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. Check if you " +
+                    "selected the correct file and retry.</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
         }
 
     }

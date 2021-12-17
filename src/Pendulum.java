@@ -297,6 +297,8 @@ public class Pendulum extends JFrame {
 
         //method calculates the coordinate of the fixed point and the pendulum bob
         private void calculatePoints(){
+            //pointX is dynamically calculated whenever the screen resizes- its always at the same relative
+            //position compared to the window
             pointX = getWidth()/2;
             pointY = getHeight()/10;
             pendulumX = pointX + (int) (Math.sin(PO.getAngle()) * PO.getLength()*100);
@@ -317,6 +319,7 @@ public class Pendulum extends JFrame {
                 PO.setLength((double) lengthS.getValue() / 1000);
                 PO.setInitialAngle(initAngleS.getValue() * (Math.PI/180));
                 PO.setAngle(PO.getInitialAngle());
+                //resets the flag
                 sliderChanged = false;
             }
             //checks if the user has inputted data values to the text fields in the extra panel
@@ -325,6 +328,7 @@ public class Pendulum extends JFrame {
                 PO.setGravity(gravityTF);
                 PO.setInitialAngle(angleTF);
                 PO.setAngle(PO.getInitialAngle());
+                //resets the flag
                 TFSaved = false;
 
                 //sets the values of the sliders to the specified values
@@ -340,6 +344,7 @@ public class Pendulum extends JFrame {
             }
 
             if(clicked){
+                //resets booleans so only 1 value is stored in the undo stack
                 clicked = false;
                 sliderChanged = false;
             }
@@ -470,6 +475,7 @@ public class Pendulum extends JFrame {
             saveChangesPressed SCP = new saveChangesPressed();
             saveChanges.addActionListener(SCP);
 
+            //errors is a text area used to show when an illegal value has been entered
             errors = new JTextArea("");
             errors.setLineWrap(true);
             errors.setWrapStyleWord(true);

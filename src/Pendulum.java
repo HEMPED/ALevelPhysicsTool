@@ -498,6 +498,7 @@ public class Pendulum extends JFrame {
             public void actionPerformed(ActionEvent saveChangesPressed){
                 //clears the label every time the button is pressed
                 errors.setText("");
+                isValidated = true;
 
                 //makes sure gravity is a number and negative or above 20N/kg
                 try{

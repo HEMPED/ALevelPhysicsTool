@@ -1,6 +1,5 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.net.URL;
 import javax.swing.*;
 
 public class MainMenu extends JFrame{
@@ -67,8 +66,7 @@ public class MainMenu extends JFrame{
 
     public class infoPressed implements ActionListener{
         public void actionPerformed(ActionEvent infoPressed){
-            JOptionPane.showMessageDialog(dialogueFrame,
-                    "Created by Hemanath Peddireddi", "More Information",
+            JOptionPane.showMessageDialog(dialogueFrame, "Created by Hemanath Peddireddi", "More Information",
                     JOptionPane.PLAIN_MESSAGE);
         }
     }

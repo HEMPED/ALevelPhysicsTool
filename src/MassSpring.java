@@ -647,19 +647,26 @@ public class MassSpring extends JFrame {
                     //messages are in HTML so they wrap the JDialog.
                     extraInputPanel ep = new extraInputPanel();
                     if (notNumber) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Only numbers allowed</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ep, "<HTML>Only numbers allowed</HTML>", "ERROR",
+                                JOptionPane.ERROR_MESSAGE);
                     } else if (SCHigh || SCLow) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Spring constant must be between 1 and 200</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ep, "<HTML>Spring constant must be between 1 and 200</HTML>",
+                                "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (DHigh || DLow) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Displacement must be lower than the extension</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ep, "<HTML>Displacement must be lower than the extension and positive</HTML>",
+                                "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (LLow || AHigh || ALow) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be more than extension</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be more than extension and positive</HTML>",
+                                "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (LHigh) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be less than 15</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be less than 15</HTML>",
+                                "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (MLow) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be negative</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be negative</HTML>",
+                                "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (MHigh) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be more than 10</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be more than 10</HTML>",
+                                "ERROR", JOptionPane.ERROR_MESSAGE);
                     }
                     //resets booleans
                     notNumber = SCHigh = SCLow = DHigh = DLow = LHigh = LLow = MHigh = MLow = AHigh = ALow = false;

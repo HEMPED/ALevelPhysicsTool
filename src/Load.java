@@ -1,5 +1,3 @@
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -12,6 +10,7 @@ public class Load extends Save {
         fileChosen = false;
     }
 
+    //opens a JFileChooser instead of a JFileDialog
     @Override
     public void openExplorer(){
         JFileChooser chooser = new JFileChooser(".");
@@ -30,8 +29,5 @@ public class Load extends Save {
 
     public boolean getFileChosen(){
         return fileChosen;
-    }
-
-    public static void main(String[] args){
     }
 }

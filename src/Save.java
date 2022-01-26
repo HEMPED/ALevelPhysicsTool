@@ -6,8 +6,6 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
-
 public class Save extends JPanel {
     static File directory;
     String fileName;
@@ -48,7 +46,8 @@ public class Save extends JPanel {
         mapper.writeValue(directory, obj);
     }
 
-    //getExtension() and renameFile() make sure that the user an only save .json files so that they can be reselected with the load function.
+    //getExtension() and renameFile() make sure that the user an only save .json files so that they can be
+    //reselected with the load function.
     private String getExtension() {
         if(directory!=null) {
             String name = directory.getName();
@@ -62,6 +61,7 @@ public class Save extends JPanel {
         }
     }
 
+    //renames the file to *.json
     private void renameFile(){
         int i = directory.getName().lastIndexOf(".");
         if(i == -1){
@@ -76,25 +76,23 @@ public class Save extends JPanel {
         return directory;
     }
 
+    //creates a JSON file, tells the user if it can't
     public void start(Object obj){
         if (getExtension().equals("json")) {
             try {
                 write(directory, obj);
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "<HTML>Error writing to file, please retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "<HTML>Error writing to file, please retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
         } else {
             renameFile();
             try {
                 write(directory, obj);
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "<HTML>Error writing to file, please retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "<HTML>Error writing to file, please retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
         }
-    }
-
-    public static void main(String[] args){
-        Save s = new Save();
-        s.openExplorer();
     }
 }

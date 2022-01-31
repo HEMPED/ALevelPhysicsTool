@@ -748,29 +748,45 @@ public class Pendulum extends JFrame {
 
     //Method to read values from file
     public void read(File directory){
+        boolean isValidated = true;
         try{
             ObjectMapper mapper = new ObjectMapper();
 
             PendulumObj POTemp = mapper.readValue(directory, PendulumObj.class);
 
-            PO.setAngle(POTemp.getInitialAngle());
-            PO.setGravity(POTemp.getGravity());
-            PO.setLength(POTemp.getLength());
-            PO.setInitialAngle(POTemp.getInitialAngle());
+            if(Math.abs(POTemp.getInitialAngle()) > 180){
+                isValidated = false;
+            }
+            if(POTemp.getGravity() < 0 || POTemp.getGravity() > 20){
+                isValidated = false;
+            }
+            if(POTemp.getLength() < 0 || POTemp.getLength() > 10){
+                isValidated = false;
+            }
 
-            //sets the values of the sliders to the specified values
-            gravityS.setValue((int)(PO.getGravity() * 100));
+            if(isValidated) {
+                PO.setAngle(POTemp.getInitialAngle());
+                PO.setGravity(POTemp.getGravity());
+                PO.setLength(POTemp.getLength());
+                PO.setInitialAngle(POTemp.getInitialAngle());
 
-            int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
-            initAngleS.setValue(angleInt);
+                //sets the values of the sliders to the specified values
+                gravityS.setValue((int) (PO.getGravity() * 100));
 
-            lengthS.setValue((int) (PO.getLength() * 1000));
+                int angleInt = (int) (PO.getAngle() * (180 / Math.PI));
+                initAngleS.setValue(angleInt);
 
-            //sets the slider changed flag to false
-            sliderChanged = false;
+                lengthS.setValue((int) (PO.getLength() * 1000));
 
-            //resets the timer
-            start = System.nanoTime();
+                //sets the slider changed flag to false
+                sliderChanged = false;
+
+                //resets the timer
+                start = System.nanoTime();
+            }else{
+                JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. " +
+                        "Check if you selected the correct file and retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. Check if you " +

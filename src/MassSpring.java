@@ -541,17 +541,17 @@ public class MassSpring extends JFrame {
                 //ensures spring constant is a number between 1 and 200
                 try {
                     springConstantT = Double.parseDouble(springConstantTF.getText());
-                    if (springConstantT < 0) {
-                        SCHigh = true;
-                        isValidated = false;
-                    } else {
-                        SCHigh = false;
-                    }
-                    if (springConstantT > 200) {
+                    if (springConstantT <= 0) {
                         SCLow = true;
                         isValidated = false;
                     } else {
                         SCLow = false;
+                    }
+                    if (springConstantT > 200) {
+                        SCHigh = true;
+                        isValidated = false;
+                    } else {
+                        SCHigh = false;
                     }
                 } catch (NumberFormatException NFE) {
                     notNumber = true;
@@ -618,7 +618,7 @@ public class MassSpring extends JFrame {
                 //mass is a number between 0 and 20
                 try {
                     massT = Double.parseDouble(massTF.getText());
-                    if (massT < 0) {
+                    if (massT <= 0) {
                         MLow = true;
                         isValidated = false;
                     }
@@ -647,25 +647,26 @@ public class MassSpring extends JFrame {
                     //messages are in HTML so they wrap the JDialog.
                     extraInputPanel ep = new extraInputPanel();
                     if (notNumber) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Only numbers allowed</HTML>",
-                                "ERROR", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(ep, "<HTML>Only numbers allowed</HTML>", "ERROR",
+                                JOptionPane.ERROR_MESSAGE);
                     } else if (SCHigh || SCLow) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Spring constant must be between 1 and 200</HTML>",
                                 "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (DHigh || DLow) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Displacement must be lower than the extension</HTML>",
+                        JOptionPane.showMessageDialog(ep, "<HTML>The absolute value of displacement must be " +
+                                        "lower than the absolute value of extension</HTML>",
                                 "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (LLow || AHigh || ALow) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be more than extension</HTML>",
+                        JOptionPane.showMessageDialog(ep, "<HTML>Length must be more than extension and positive</HTML>",
                                 "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (LHigh) {
                         JOptionPane.showMessageDialog(ep, "<HTML>Length must be less than 15</HTML>",
                                 "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (MLow) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be negative</HTML>",
+                        JOptionPane.showMessageDialog(ep, "<HTML>Mass must be between 1 and 10</HTML>",
                                 "ERROR", JOptionPane.ERROR_MESSAGE);
                     } else if (MHigh) {
-                        JOptionPane.showMessageDialog(ep, "<HTML>Mass cannot be more than 10</HTML>",
+                        JOptionPane.showMessageDialog(ep, "<HTML>Mass must be between 1 and 10</HTML>",
                                 "ERROR", JOptionPane.ERROR_MESSAGE);
                     }
                     //resets booleans
@@ -744,8 +745,7 @@ public class MassSpring extends JFrame {
         public void actionPerformed(ActionEvent undoButtonPressed){
             if(!undoStack.empty()){
                 //adds current values to the redo stack
-                redoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(),
-                        MSO.getMass(), MSO.getAmplitude()));
+                redoStack.push(new MassSpringObj(MSO.getSpringConstant(), MSO.getDisplacement(), MSO.getLength(), MSO.getMass(), MSO.getAmplitude()));
 
                 //gets the old values
                 MassSpringObj MSOtemp = undoStack.pop();
@@ -831,6 +831,7 @@ public class MassSpring extends JFrame {
 
     //Method to retrieve values from the .json file
     public void read(File directory){
+        boolean validated = true;
         try{
             ObjectMapper mapper = new ObjectMapper();
 
@@ -841,14 +842,30 @@ public class MassSpring extends JFrame {
             //gets the values from file
             MassSpringObj MSOTemp = mapper.readValue(directory, MassSpringObj.class);
 
+            //checks if the file has been tampered with
+            if(MSOTemp.getLength() < 0 || MSOTemp.getLength() > 15 || MSOTemp.getLength() < MSOTemp.getAmplitude()){
+                validated = false;
+            }
+            if(MSOTemp.getDisplacement() > MSOTemp.getAmplitude()){
+                validated = false;
+            }
+            if(MSOTemp.getMass() < 0 || MSOTemp.getMass() > 20){
+                validated = false;
+            }
+            if(MSOTemp.getSpringConstant() < 0 || MSOTemp.getSpringConstant() > 200){
+                validated = false;
+            }
+
             //changes the simulation
-            MSO.setSpringConstant(MSOTemp.getSpringConstant());
-            MSO.setDisplacement(MSOTemp.getAmplitude());
-            MSO.setLength(MSOTemp.getLength());
-            MSO.setTimePeriod(MSOTemp.getTimePeriod());
-            MSO.setAngularVelocity(MSOTemp.getAngularVelocity());
-            MSO.setMass(MSOTemp.getMass());
-            MSO.setAmplitude(MSOTemp.getAmplitude());
+            if(validated) {
+                MSO.setSpringConstant(MSOTemp.getSpringConstant());
+                MSO.setDisplacement(MSOTemp.getAmplitude());
+                MSO.setLength(MSOTemp.getLength());
+                MSO.setTimePeriod(MSOTemp.getTimePeriod());
+                MSO.setAngularVelocity(MSOTemp.getAngularVelocity());
+                MSO.setMass(MSOTemp.getMass());
+                MSO.setAmplitude(MSOTemp.getAmplitude());
+
 
             //gets the current time
             double angularVelocity = Math.pow((MSO.getSpringConstant() / MSO.getMass()), 0.5);
@@ -868,7 +885,10 @@ public class MassSpring extends JFrame {
             extensionS.setValue((int) (MSO.getAmplitude() * 100));
             springConstantS.setValue((int) (MSO.getSpringConstant()));
             sliderChanged = true;
-
+            } else {
+                JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. " +
+                        "Check if you selected the correct file and retry</HTML>", "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
         } catch (IOException e) {
             //lets the user know if there was an error
             JOptionPane.showMessageDialog(this, "<HTML>Error reading from file. " +

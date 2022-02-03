@@ -582,7 +582,7 @@ public class MassSpring extends JFrame {
                 try {
                     amplitudeT = Double.parseDouble(extensionTF.getText());
                     if (amplitudeT < lengthT * -1) {
-                        ALow = true;
+                        AHigh = true;
                         isValidated = false;
                     }
                     if (amplitudeT > lengthT) {
